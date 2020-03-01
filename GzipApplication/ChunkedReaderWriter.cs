@@ -63,7 +63,7 @@ namespace GzipApplication
         {
             if (hasMoreToWrite && _hasWriteData.WaitOne(TimeSpan.Zero))
             {
-                hasMoreToWrite = _dataWriter.Flush();
+                hasMoreToWrite = _dataWriter.FlushReadyChunks();
             }
 
             return hasMoreToWrite;

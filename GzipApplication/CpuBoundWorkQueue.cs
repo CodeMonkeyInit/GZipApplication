@@ -8,7 +8,7 @@ namespace GzipApplication
     {
         private static readonly Thread[] Threads;
 
-        public static readonly int ParallelWorkMax = 1;
+        public static readonly int ParallelWorkMax = Environment.ProcessorCount;
 
         static CpuBoundWorkQueue()
         {

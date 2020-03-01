@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace GzipApplication
 {
@@ -65,7 +64,7 @@ namespace GzipApplication
                 Order = chunkToProcess.Order
             });
 
-            chunkProcessedEventHandle.Set();
+            chunkProcessedEventHandle.Set(); 
             readSlotsSemaphore.Release();
         }
 

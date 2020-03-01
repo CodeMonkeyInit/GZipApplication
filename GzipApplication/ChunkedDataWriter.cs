@@ -2,8 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading;
 
 namespace GzipApplication
 {
@@ -26,22 +24,26 @@ namespace GzipApplication
             _fileStream.Dispose();
         }
 
-        public bool Flush()
+        private readonly SortedDictionary<long, OrderedChunk> _sortedDictionary = new SortedDictionary<long, OrderedChunk>();
+        
+        public bool FlushReadyChunks()
         {
             var compressedChunksCount = _compressedChunks.Count;
+            var count = 0;
 
-            var sortedDictionary = new SortedDictionary<long, OrderedChunk>();
-            
-            while (sortedDictionary.Count < compressedChunksCount && _compressedChunks.TryTake(out OrderedChunk orderedChunk))
+            while (count < compressedChunksCount && _compressedChunks.TryTake(out OrderedChunk orderedChunk))
             {
-                sortedDictionary.Add(orderedChunk.Order, orderedChunk);
+                _sortedDictionary.Add(orderedChunk.Order, orderedChunk);
+                count++;
             }
 
-            while (sortedDictionary.ContainsKey(_chunksWritten))
+            while (_sortedDictionary.ContainsKey(_chunksWritten))
             {
-                var orderedChunk = sortedDictionary[_chunksWritten];
+                var orderedChunk = _sortedDictionary[_chunksWritten];
                 
                 _fileStream.Write(orderedChunk.Data);
+                
+                _sortedDictionary.Remove(_chunksWritten);
                 _chunksWritten++;
             }
             

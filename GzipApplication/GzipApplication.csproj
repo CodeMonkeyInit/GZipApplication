@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <Nullable>Enable</Nullable>
+        <UserSecretsId>dotnet-GzipApplication-1396A9B9-2C32-4C25-9188-B66055FC6130</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.1" />
+    </ItemGroup>
+</Project>

@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 
-namespace GzipApplication
+namespace GzipApplication.ChunkedFileReader
 {
-    public class ChunkedFileReader : IDisposable
+    public class FixLengthChunkedFileReader : IDisposable, IChunkedFileReader
     {
         private readonly FileStream _fileStream;
         private readonly int _chunkSizeInBytes;
@@ -13,7 +11,7 @@ namespace GzipApplication
 
         private int _chunksRead = 0;
 
-        public ChunkedFileReader(FileStream fileStream, int chunkSizeInBytes = DefaultChunkSizeInBytes)
+        public FixLengthChunkedFileReader(FileStream fileStream, int chunkSizeInBytes = DefaultChunkSizeInBytes)
         {
             _fileStream = fileStream ?? throw new ArgumentNullException(nameof(fileStream));
             _chunkSizeInBytes = chunkSizeInBytes;
@@ -29,7 +27,7 @@ namespace GzipApplication
             }
         }
 
-        public long LengthInChunks
+        public long? LengthInChunks
         {
             get
             {
@@ -42,18 +40,20 @@ namespace GzipApplication
 
         private long? _lengthInChunks;
 
-        public OrderedChunk? ReadChunk()
+        public bool HasMore => _chunksRead != _lengthInChunks;
+
+        public OrderedChunk ReadChunk()
         {
-            if (_chunksRead == LengthInChunks)
+            if (!HasMore)
             {
-                return null;
+                throw new InvalidOperationException("All chunks already has been read");
             }
 
             Read(out var readBytes);
 
             return new OrderedChunk
             {
-                Data = readBytes,
+                 Data = readBytes,
                 Order = _chunksRead++
             };
         }

@@ -1,5 +1,7 @@
 using System;
 using System.Threading;
+using GzipApplication.ChunkedFileReader;
+using GzipApplication.ChunkedFIleWriter;
 
 namespace GzipApplication
 {
@@ -7,17 +9,16 @@ namespace GzipApplication
     {
         private readonly SemaphoreSlim _readSlotsSemaphore;
         private readonly AutoResetEvent _hasWriteData;
-        private readonly ChunkedFileReader _chunkedFileReader;
-        private readonly ChunkedDataWriter _dataWriter;
+        private readonly IChunkedFileReader _fixLengthChunkedFileReader;
+        private readonly BaseChunkedWriter _dataWriter;
         private readonly int _bufferSize;
 
         public ChunkedReaderWriter(SemaphoreSlim readSlotsSemaphore, AutoResetEvent hasWriteData,
-            ChunkedFileReader chunkedFileReader,
-            ChunkedDataWriter dataWriter)
+            IChunkedFileReader fixLengthChunkedFileReader, BaseChunkedWriter dataWriter)
         {
             _readSlotsSemaphore = readSlotsSemaphore;
             _hasWriteData = hasWriteData;
-            _chunkedFileReader = chunkedFileReader;
+            _fixLengthChunkedFileReader = fixLengthChunkedFileReader;
             _dataWriter = dataWriter;
             _bufferSize = readSlotsSemaphore.CurrentCount;
         }
@@ -29,31 +30,29 @@ namespace GzipApplication
 
             while (hasMoreToRead || hasMoreToWrite)
             {
-                hasMoreToRead = Read(onRead, hasMoreToRead);
+                hasMoreToRead = Read(onRead);
 
                 hasMoreToWrite = Write(hasMoreToWrite);
             }
         }
 
-        private bool Read(Action<OrderedChunk> onRead, bool hasMoreToRead)
+        private bool Read(Action<OrderedChunk> onRead)
         {
             int readCount = 0;
 
             //TODO this could lead to threads starvation
             bool BufferIsFull() => readCount >= _bufferSize;
 
+            bool hasMoreToRead = _fixLengthChunkedFileReader.HasMore;
             while (hasMoreToRead && !BufferIsFull() && _readSlotsSemaphore.Wait(TimeSpan.Zero))
             {
-                OrderedChunk? chunk = _chunkedFileReader.ReadChunk();
+                OrderedChunk chunk = _fixLengthChunkedFileReader.ReadChunk();
 
                 readCount++;
 
-                if (!chunk.HasValue)
-                {
-                    return false;
-                }
+                onRead(chunk);
 
-                onRead(chunk.Value);
+                hasMoreToRead = _fixLengthChunkedFileReader.HasMore;
             }
 
             return hasMoreToRead;

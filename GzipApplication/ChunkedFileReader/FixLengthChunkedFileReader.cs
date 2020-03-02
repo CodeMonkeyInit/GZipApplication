@@ -40,7 +40,7 @@ namespace GzipApplication.ChunkedFileReader
 
         private long? _lengthInChunks;
 
-        public bool HasMore => _chunksRead != _lengthInChunks;
+        public bool HasMore => _chunksRead != LengthInChunks;
 
         public OrderedChunk ReadChunk()
         {

@@ -2,6 +2,7 @@
   "profiles": {
     "GzipApplication": {
       "commandName": "Project",
+      "commandLineArgs": "compress \"/Users/deniskuliev/Downloads/UnityHubSetup.dmg\" \"/Users/deniskuliev/Downloads/UnityHubSetup.dmg.gz\"",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       }

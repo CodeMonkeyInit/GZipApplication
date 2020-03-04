@@ -16,7 +16,7 @@ namespace GzipApplication
 
             for (int i = 0; i < Threads.Length; i++)
             {
-                var newThread = new Thread(DoSomeWork)
+                var newThread = new Thread(Work)
                 {
                     IsBackground = true
                 };
@@ -38,13 +38,13 @@ namespace GzipApplication
             return true;
         }
 
-        private static void DoSomeWork()
+        private static void Work()
         {
             while (true)
             {
                 WorkQueuedSemaphore.Wait();
 
-                if (ConcurrentQueue.TryDequeue(out Action workToDo))
+                if (ConcurrentQueue.TryDequeue(out Action? workToDo))
                 {
                     workToDo();
                 }

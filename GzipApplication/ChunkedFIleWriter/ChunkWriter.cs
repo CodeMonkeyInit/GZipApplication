@@ -16,7 +16,7 @@ namespace GzipApplication.ChunkedFIleWriter
 
         protected override void Write(OrderedChunk chunk)
         {
-            _fileStream.Write(chunk.Data);
+            _fileStream.Write(chunk.Data.Span);
         }
 
         protected override void Flush()

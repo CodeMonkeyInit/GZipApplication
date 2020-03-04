@@ -5,6 +5,8 @@ using System.IO.Compression;
 using System.Threading;
 using GzipApplication.ChunkedFileReader;
 using GzipApplication.ChunkedFIleWriter;
+using GzipApplication.Constants;
+using GzipApplication.Exceptions;
 
 namespace GzipApplication
 {
@@ -73,11 +75,20 @@ namespace GzipApplication
             SemaphoreSlim readSlotsSemaphore)
         {
             using var memoryStream = new MemoryStream();
-            using var gZipStream = new GZipStream(new MemoryStream(chunk.Data), CompressionMode.Decompress);
+            
+            using var compressedDataStream = new MemoryStream(chunk.Data.ToArray());
+            using var gZipStream = new GZipStream(compressedDataStream, CompressionMode.Decompress);
 
-            gZipStream.CopyTo(memoryStream);
-            gZipStream.Flush();
-
+            try
+            {
+                gZipStream.CopyTo(memoryStream);
+                gZipStream.Flush();
+            }
+            catch (InvalidDataException e)
+            {
+                throw new InvalidArchiveFormatException(Messages.ArchiveFormatIsNotSupported, e);
+            }
+            
             processedChunks.Add(new OrderedChunk
             {
                 Data = memoryStream.ToArray(),
@@ -93,10 +104,10 @@ namespace GzipApplication
         {
             using var memoryStream = new MemoryStream();
             using var gZipStream = new GZipStream(memoryStream, CompressionMode.Compress);
-
-            gZipStream.Write(chunkToProcess.Data);
+            
+            gZipStream.Write(chunkToProcess.Data.Span);
             gZipStream.Flush();
-
+            
             processedChunks.Add(new OrderedChunk
             {
                 Data = memoryStream.ToArray(),
@@ -107,11 +118,11 @@ namespace GzipApplication
             readSlotsSemaphore.Release();
         }
         
-        private void ValidateFile(string inputFileInfo)
+        private void ValidateFile(string inputFilePath)
         {
-            if (!File.Exists(inputFileInfo))
+            if (!File.Exists(inputFilePath))
             {
-                throw new FileNotFoundException("Sorry the file you specified is not found", inputFileInfo);
+                throw new FileNotFoundException(Messages.FileIsNotFound, inputFilePath);
             }
         }
     }

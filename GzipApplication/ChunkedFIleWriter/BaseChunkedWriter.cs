@@ -20,7 +20,6 @@ namespace GzipApplication.ChunkedFIleWriter
             _getChunksCount = getChunksCount;
         }
 
-
         public bool FlushReadyChunks()
         {
             var compressedChunksCount = _chunks.Count;

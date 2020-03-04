@@ -1,8 +1,10 @@
+using System;
+
 namespace GzipApplication
 {
     public struct OrderedChunk
     {
         public long Order;
-        public byte[] Data;
+        public Memory<byte> Data;
     }
 }

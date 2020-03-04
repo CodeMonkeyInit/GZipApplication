@@ -13,9 +13,9 @@ namespace GzipApplication.ChunkedFileReader
         }
 
         public bool HasMore => _binaryReader.BaseStream.Position != _binaryReader.BaseStream.Length;
-        public long? LengthInChunks => HasMore ? default : chunksRead;
+        public long? LengthInChunks => HasMore ? default : _chunksRead;
 
-        private long chunksRead = 0;
+        private long _chunksRead = 0;
         public OrderedChunk ReadChunk()
         {
             if (!HasMore)
@@ -30,7 +30,7 @@ namespace GzipApplication.ChunkedFileReader
             return new OrderedChunk
             {
                 Data = readBytes,
-                Order = chunksRead++
+                Order = _chunksRead++
             };
         }
         

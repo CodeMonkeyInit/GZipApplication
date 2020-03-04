@@ -1,6 +1,6 @@
 using System;
 
-namespace GzipApplication
+namespace GzipApplication.Data
 {
     public struct OrderedChunk
     {

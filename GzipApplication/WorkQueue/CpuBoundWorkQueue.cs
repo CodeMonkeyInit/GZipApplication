@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 
-namespace GzipApplication
+namespace GzipApplication.WorkQueue
 {
     public static class CpuBoundWorkQueue
     {

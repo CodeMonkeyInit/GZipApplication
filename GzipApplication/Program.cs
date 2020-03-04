@@ -2,23 +2,23 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using GzipApplication.Exceptions;
+using GzipApplication.Exceptions.User;
 
 namespace GzipApplication
 {
+    
     public class Program
     {
+        private const int ProgramFailedExitCode = 1;
+        private const int ProgramSucceededExitCode = 0;
+
         public static int Main(string[] args)
         {
             var stopwatch = new Stopwatch();
 
             var argumentsParser = new ArgumentsParser.ArgumentsParser();
             
-            AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
-            {
-                Console.WriteLine(((Exception) eventArgs.ExceptionObject).Message);
-
-                Environment.Exit(1);
-            };
+            SubscribeToThreadExceptions();
 
             try
             {
@@ -32,7 +32,7 @@ namespace GzipApplication
 
                 Console.WriteLine($"Done in {stopwatch.Elapsed}");
 
-                return 0;
+                return ProgramSucceededExitCode;
             }
             catch (FileNotFoundException e)
             {
@@ -43,7 +43,17 @@ namespace GzipApplication
                 Console.WriteLine(e.Message);
             }
 
-            return -1;
+            return ProgramFailedExitCode;
+        }
+
+        private static void SubscribeToThreadExceptions()
+        {
+            AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
+            {
+                Console.WriteLine(((Exception) eventArgs.ExceptionObject).Message);
+
+                Environment.Exit(ProgramFailedExitCode);
+            };
         }
     }
 }

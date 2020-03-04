@@ -3,31 +3,20 @@ using System.IO;
 
 namespace GzipApplication.ChunkedFileReader
 {
-    public class FixLengthChunkedFileReader : IDisposable, IChunkedFileReader
+    public class FixLengthChunkedFileReader : ChunkedFileReader, IDisposable
     {
         private readonly FileStream _fileStream;
         private readonly int _chunkSizeInBytes;
         private const int DefaultChunkSizeInBytes = 1_000_000;
 
-        private int _chunksRead = 0;
-
-        public FixLengthChunkedFileReader(FileStream fileStream, int chunkSizeInBytes = DefaultChunkSizeInBytes)
+        public FixLengthChunkedFileReader(FileStream fileStream, int chunkSizeInBytes = DefaultChunkSizeInBytes) :
+            base(fileStream)
         {
             _fileStream = fileStream ?? throw new ArgumentNullException(nameof(fileStream));
             _chunkSizeInBytes = chunkSizeInBytes;
-
-            if (!fileStream.CanRead)
-            {
-                throw new ArgumentException("Can't read file");
-            }
-
-            if (fileStream.Position != 0)
-            {
-                throw new ArgumentException("Somebody already tried to read a file!");
-            }
         }
 
-        public long? LengthInChunks
+        public override long? LengthInChunks
         {
             get
             {
@@ -40,25 +29,9 @@ namespace GzipApplication.ChunkedFileReader
 
         private long? _lengthInChunks;
 
-        public bool HasMore => _chunksRead != LengthInChunks;
+        public override bool HasMore => ChunksRead != LengthInChunks;
 
-        public OrderedChunk ReadChunk()
-        {
-            if (!HasMore)
-            {
-                throw new InvalidOperationException("All chunks already has been read");
-            }
-
-            Read(out var readBytes);
-
-            return new OrderedChunk
-            {
-                 Data = readBytes,
-                Order = _chunksRead++
-            };
-        }
-
-        private int Read(out byte[] readBytes)
+        protected override byte[] ReadBytes()
         {
             long leftToRead = _fileStream.Length - _fileStream.Position;
 
@@ -66,14 +39,13 @@ namespace GzipApplication.ChunkedFileReader
                 ? _chunkSizeInBytes
                 : (int) leftToRead;
 
-            readBytes = new byte[chunkSizeInBytes];
+            var readBytes = new byte[chunkSizeInBytes];
 
-            if (leftToRead == 0)
-                return 0;
+            _fileStream.Read(readBytes, 0, chunkSizeInBytes);
 
-            return _fileStream.Read(readBytes, 0, chunkSizeInBytes);
+            return readBytes;
         }
-        
+
         public void Dispose()
         {
             _fileStream.Dispose();

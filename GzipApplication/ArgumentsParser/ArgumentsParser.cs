@@ -1,6 +1,8 @@
 using System;
+using GzipApplication.Compressor;
 using GzipApplication.Constants;
 using GzipApplication.Exceptions;
+using GzipApplication.Exceptions.User;
 
 namespace GzipApplication.ArgumentsParser
 {
@@ -15,11 +17,11 @@ namespace GzipApplication.ArgumentsParser
         public Action GetAction(string[] arguments)
         {
             if (arguments.Length == 0)
-                throw new EmptyArgumentsException($"{Messages.EmptyArguments} {Messages.SpecifyArguments}");
+                throw new EmptyArgumentsException($"{UserMessages.EmptyArguments} {UserMessages.SpecifyArguments}");
 
             if (arguments.Length < RequiredArgumentsCount)
                 throw new InvalidArgumentException(
-                    $"{Messages.SomeArgumentsAreMissing} {Messages.SpecifyArguments}");
+                    $"{UserMessages.SomeArgumentsAreMissing} {UserMessages.SpecifyArguments}");
 
             var command = arguments[CommandIndex];
             var inputFilePath = arguments[InputFileIndex];
@@ -36,7 +38,7 @@ namespace GzipApplication.ArgumentsParser
         private static void ValidatePath(string filePath, string name)
         {
             if (string.IsNullOrWhiteSpace(filePath))
-                throw new InvalidFilePath(string.Format(Messages.FilepathIsInvalidFormat, name, filePath));
+                throw new InvalidFilePath(string.Format(UserMessages.FilepathIsInvalidFormat, name, filePath));
         }
 
         private static Action<string, string> GetDelegateToCall(string command)
@@ -48,7 +50,7 @@ namespace GzipApplication.ArgumentsParser
                 Commands.Compression => gZipCompressor.Compress,
                 Commands.Decompression => gZipCompressor.Decompress,
                 _ => throw new InvalidArgumentException(
-                    $"{string.Format(Messages.InvalidArgumentFormat, command)} {Messages.ValidArgumentsFormat}")
+                    $"{string.Format(UserMessages.InvalidArgumentFormat, command)} {UserMessages.ValidArgumentsFormat}")
             };
 
             return delegateToCall;

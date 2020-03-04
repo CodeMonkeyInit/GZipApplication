@@ -6,11 +6,15 @@ using System.Threading;
 using GzipApplication.ChunkedFileReader;
 using GzipApplication.ChunkedFIleWriter;
 using GzipApplication.Constants;
+using GzipApplication.Data;
 using GzipApplication.Exceptions;
+using GzipApplication.Exceptions.User;
+using GzipApplication.ReaderWriter;
+using GzipApplication.WorkQueue;
 
-namespace GzipApplication
+namespace GzipApplication.Compressor
 {
-    public class GZipCompressor
+    public class GZipCompressor : IGZipCompressor
     {
         public void Compress(string inputFilename, string outputFilename)
         {
@@ -20,6 +24,7 @@ namespace GzipApplication
 
             using var fileReader = new FixLengthChunkedFileReader(File.OpenRead(inputFilename));
             using var fileWriter = new BinaryChunkedDataWriter(outputFilename, processedChunks, 
+                // ReSharper disable once AccessToDisposedClosure
                 () => fileReader.LengthInChunks);
             
             Process(CompressionMode.Compress, fileReader, processedChunks, fileWriter);
@@ -86,7 +91,7 @@ namespace GzipApplication
             }
             catch (InvalidDataException e)
             {
-                throw new InvalidArchiveFormatException(Messages.ArchiveFormatIsNotSupported, e);
+                throw new InvalidArchiveFormatException(UserMessages.ArchiveFormatIsNotSupported, e);
             }
             
             processedChunks.Add(new OrderedChunk
@@ -122,7 +127,7 @@ namespace GzipApplication
         {
             if (!File.Exists(inputFilePath))
             {
-                throw new FileNotFoundException(Messages.FileIsNotFound, inputFilePath);
+                throw new FileNotFoundException(UserMessages.FileIsNotFound, inputFilePath);
             }
         }
     }

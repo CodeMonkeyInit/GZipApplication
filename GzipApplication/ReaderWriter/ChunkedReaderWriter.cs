@@ -2,8 +2,9 @@ using System;
 using System.Threading;
 using GzipApplication.ChunkedFileReader;
 using GzipApplication.ChunkedFIleWriter;
+using GzipApplication.Data;
 
-namespace GzipApplication
+namespace GzipApplication.ReaderWriter
 {
     public class ChunkedReaderWriter : IDisposable
     {

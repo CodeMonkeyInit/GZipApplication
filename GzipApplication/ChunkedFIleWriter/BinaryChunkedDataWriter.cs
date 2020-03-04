@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using GzipApplication.Data;
 
 namespace GzipApplication.ChunkedFIleWriter
 {

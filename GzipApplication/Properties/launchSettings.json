@@ -2,7 +2,9 @@
   "profiles": {
     "GzipApplication": {
       "commandName": "Project",
-      "commandLineArgs": "compress \"/Users/deniskuliev/Downloads/UnityHubSetup.dmg\" \"/Users/deniskuliev/Downloads/UnityHubSetup.dmg.gz\"",
+      "commandLineArgs":  "compress /Users/deniskuliev/Desktop/CompressTest/UnityHubSetup.dmg /Users/deniskuliev/Desktop/CompressTest/UnityHubSetup.dmg.gz",
+      "// Compress": "compress /Users/deniskuliev/Desktop/CompressTest/UnityHubSetup.dmg /Users/deniskuliev/Desktop/CompressTest/UnityHubSetup.dmg.gz",
+      "// Decompress": "decompress /Users/deniskuliev/Desktop/CompressTest/UnityHubSetup.dmg.gz /Users/deniskuliev/Desktop/CompressTest/UnityHubSetup.unpck.dmg",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       }

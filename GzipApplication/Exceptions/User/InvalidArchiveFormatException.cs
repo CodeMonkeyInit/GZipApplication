@@ -7,5 +7,9 @@ namespace GzipApplication.Exceptions.User
         public InvalidArchiveFormatException(string message, Exception innerException) : base(message, innerException)
         {
         }
+
+        public InvalidArchiveFormatException(string message) : base(message)
+        {
+        }
     }
 }

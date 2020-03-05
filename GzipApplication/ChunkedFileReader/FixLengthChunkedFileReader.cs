@@ -3,7 +3,7 @@ using System.IO;
 
 namespace GzipApplication.ChunkedFileReader
 {
-    public class FixLengthChunkedFileReader : ChunkedFileReader, IDisposable
+    public class FixLengthChunkedFileReader : BaseChunkedFileReader, IDisposable
     {
         private readonly FileStream _fileStream;
         private readonly int _chunkSizeInBytes;
@@ -46,7 +46,7 @@ namespace GzipApplication.ChunkedFileReader
             return readBytes;
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _fileStream.Dispose();
         }

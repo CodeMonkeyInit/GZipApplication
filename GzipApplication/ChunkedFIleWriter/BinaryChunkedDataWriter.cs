@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.IO;
 using GzipApplication.Data;
 
@@ -9,7 +8,7 @@ namespace GzipApplication.ChunkedFIleWriter
     {
         private readonly BinaryWriter _binaryWriter;
 
-        public BinaryChunkedDataWriter(string outputFilename, ConcurrentBag<OrderedChunk> chunks, Func<long?> getChunksCount) : base(chunks, getChunksCount)
+        public BinaryChunkedDataWriter(string outputFilename, Func<long?> getChunksCount) : base(getChunksCount)
         {
             _binaryWriter = new BinaryWriter(File.Create(outputFilename));
         }

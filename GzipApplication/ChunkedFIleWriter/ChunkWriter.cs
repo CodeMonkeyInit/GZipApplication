@@ -9,8 +9,8 @@ namespace GzipApplication.ChunkedFIleWriter
     {
         private readonly FileStream _fileStream;
 
-        public ChunkWriter(string filename, ConcurrentBag<OrderedChunk> chunks, Func<long?> getChunksCount) :
-            base(chunks, getChunksCount)
+        public ChunkWriter(string filename, Func<long?> getChunksCount) :
+            base(getChunksCount)
         {
             _fileStream = File.Create(filename);
         }

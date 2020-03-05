@@ -47,8 +47,8 @@ namespace GzipApplication.ArgumentsParser
 
             Action<string, string> delegateToCall = command switch
             {
-                Commands.Compression => gZipCompressor.Compress,
-                Commands.Decompression => gZipCompressor.Decompress,
+                Commands.Compression => new GZipCompressor().Execute,
+                Commands.Decompression => new GZipDecompressor().Execute,
                 _ => throw new InvalidArgumentException(
                     $"{string.Format(UserMessages.InvalidArgumentFormat, command)} {UserMessages.ValidArgumentsFormat}")
             };

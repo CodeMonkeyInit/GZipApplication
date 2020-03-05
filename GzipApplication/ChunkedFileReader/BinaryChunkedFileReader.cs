@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using GzipApplication.Constants;
+using GzipApplication.Exceptions.User;
 
 namespace GzipApplication.ChunkedFileReader
 {
-    public class BinaryChunkedFileReader : ChunkedFileReader, IDisposable
+    public class BinaryChunkedFileReader : BaseChunkedFileReader, IDisposable
     {
         private readonly BinaryReader _binaryReader;
 
@@ -19,12 +21,17 @@ namespace GzipApplication.ChunkedFileReader
         {
             var length = _binaryReader.ReadInt32();
 
+            if (length < 0)
+            {
+                throw new InvalidArchiveFormatException(UserMessages.ArchiveFormatIsNotSupported);
+            }
+
             var readBytes = _binaryReader.ReadBytes(length);
 
             return readBytes;
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _binaryReader.Dispose();
         }

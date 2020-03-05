@@ -7,7 +7,6 @@ namespace GzipApplication.ChunkedFIleWriter
 {
     public abstract class BaseChunkedWriter : IChunkedDataWriter, IDisposable
     {
-        private readonly ConcurrentBag<OrderedChunk> _chunks;
         private readonly Func<long?> _getChunksCount;
 
         private long _chunksWritten = 0;
@@ -15,22 +14,16 @@ namespace GzipApplication.ChunkedFIleWriter
         private readonly SortedDictionary<long, OrderedChunk> _sortedDictionary =
             new SortedDictionary<long, OrderedChunk>();
 
-        protected BaseChunkedWriter(ConcurrentBag<OrderedChunk> chunks, Func<long?> getChunksCount)
+        protected BaseChunkedWriter(Func<long?> getChunksCount)
         {
-            _chunks = chunks;
             _getChunksCount = getChunksCount;
         }
 
-        public bool FlushReadyChunks()
+        public bool WriteOrAddChunk(OrderedChunk chunk)
         {
-            var compressedChunksCount = _chunks.Count;
-            var count = 0;
-
-            while (count < compressedChunksCount && _chunks.TryTake(out OrderedChunk orderedChunk))
-            {
-                _sortedDictionary.Add(orderedChunk.Order, orderedChunk);
-                count++;
-            }
+            long? chunksCount = _getChunksCount();
+            
+            _sortedDictionary.Add(chunk.Order, chunk);
 
             while (_sortedDictionary.ContainsKey(_chunksWritten))
             {
@@ -44,14 +37,7 @@ namespace GzipApplication.ChunkedFIleWriter
 
             Flush();
 
-            var chunksCount = _getChunksCount();
-
-            if (_chunksWritten == chunksCount)
-            {
-                return false;
-            }
-
-            return true;
+            return _chunksWritten == chunksCount;
         }
 
         protected abstract void Write(OrderedChunk chunk);

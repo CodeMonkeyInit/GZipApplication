@@ -1,7 +1,9 @@
+using GzipApplication.Data;
+
 namespace GzipApplication.ChunkedFIleWriter
 {
     public interface IChunkedDataWriter
     {
-        bool FlushReadyChunks();
+        bool WriteOrAddChunk(OrderedChunk chunk);
     }
 }

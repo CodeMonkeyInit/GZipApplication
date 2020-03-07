@@ -11,8 +11,8 @@ namespace GzipApplication.Compressor
 {
     public class GZipDecompressor : BaseGzipAction
     {
-        protected override BaseChunkedFileReader GetFileReader(FileStream fileStream) =>
-            new BinaryChunkedFileReader(fileStream);
+        protected override BaseChunkedReader GetFileReader(FileStream fileStream) =>
+            new BinaryChunkedReader(fileStream);
 
         protected override BaseChunkedWriter GetFileWriter(string filename, Func<long?> getChunksCount) =>
             new ChunkWriter(filename, getChunksCount);

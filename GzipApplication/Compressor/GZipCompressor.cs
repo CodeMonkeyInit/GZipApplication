@@ -9,8 +9,8 @@ namespace GzipApplication.Compressor
 {
     public class GZipCompressor : BaseGzipAction
     {
-        protected override BaseChunkedFileReader GetFileReader(FileStream fileStream) =>
-            new FixLengthChunkedFileReader(fileStream);
+        protected override BaseChunkedReader GetFileReader(FileStream fileStream) =>
+            new FixLengthChunkedReader(fileStream);
 
         protected override BaseChunkedWriter GetFileWriter(string filename, Func<long?> getChunksCount) =>
             new BinaryChunkedDataWriter(filename, getChunksCount);

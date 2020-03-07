@@ -3,13 +3,13 @@ using System.IO;
 
 namespace GzipApplication.ChunkedFileReader
 {
-    public class FixLengthChunkedFileReader : BaseChunkedFileReader, IDisposable
+    public class FixLengthChunkedReader : BaseChunkedReader, IDisposable
     {
         private readonly FileStream _fileStream;
         private readonly int _chunkSizeInBytes;
         private const int DefaultChunkSizeInBytes = 1_000_000;
 
-        public FixLengthChunkedFileReader(FileStream fileStream, int chunkSizeInBytes = DefaultChunkSizeInBytes) :
+        public FixLengthChunkedReader(FileStream fileStream, int chunkSizeInBytes = DefaultChunkSizeInBytes) :
             base(fileStream)
         {
             _fileStream = fileStream ?? throw new ArgumentNullException(nameof(fileStream));

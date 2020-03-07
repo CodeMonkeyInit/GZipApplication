@@ -5,7 +5,7 @@ using GzipApplication.Data;
 
 namespace GzipApplication.ChunkedFIleWriter
 {
-    public abstract class BaseChunkedWriter : IChunkedDataWriter, IDisposable
+    public abstract class BaseChunkedWriter : IChunkedWriter, IDisposable
     {
         private readonly Func<long?> _getChunksCount;
 

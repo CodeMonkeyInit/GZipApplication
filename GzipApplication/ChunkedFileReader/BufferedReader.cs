@@ -8,15 +8,15 @@ namespace GzipApplication.ChunkedFileReader
 {
     public class BufferedReader
     {
-        private readonly IChunkedFileReader _fileReader;
-        private readonly EvaluationQueue _evaluationQueue;
+        private readonly IChunkedReader _reader;
+        private readonly IOBoundQueue _ioBoundQueue;
         private readonly Action<OrderedChunk> _onRead;
         private readonly SemaphoreSlim _readSlotsSemaphore;
 
-        public BufferedReader(IChunkedFileReader fileReader, EvaluationQueue evaluationQueue, Action<OrderedChunk> onRead, SemaphoreSlim readSlotsSemaphore)
+        public BufferedReader(IChunkedReader reader, IOBoundQueue ioBoundQueue, Action<OrderedChunk> onRead, SemaphoreSlim readSlotsSemaphore)
         {
-            _fileReader = fileReader;
-            _evaluationQueue = evaluationQueue;
+            _reader = reader;
+            _ioBoundQueue = ioBoundQueue;
             _onRead = onRead;
             _readSlotsSemaphore = readSlotsSemaphore;
         }
@@ -30,20 +30,20 @@ namespace GzipApplication.ChunkedFileReader
             //TODO this could lead to threads starvation
             bool BufferIsFull() => readCount >= _bufferSize;
 
-            while (_fileReader.HasMore && !BufferIsFull() && _readSlotsSemaphore.Wait(TimeSpan.Zero))
+            while (_reader.HasMore && !BufferIsFull() && _readSlotsSemaphore.Wait(TimeSpan.Zero))
             {
-                OrderedChunk chunk = _fileReader.ReadChunk();
+                OrderedChunk chunk = _reader.ReadChunk();
 
                 readCount++;
 
                 _onRead(chunk);
             }
 
-            bool isCompleted = !_fileReader.HasMore;
+            bool isCompleted = !_reader.HasMore;
 
             if (!isCompleted)
             {
-                _evaluationQueue.Enqueue(new Function
+                _ioBoundQueue.Enqueue(new Function
                 {
                     Name = nameof(ReadChunks),
                     Payload = ReadChunks

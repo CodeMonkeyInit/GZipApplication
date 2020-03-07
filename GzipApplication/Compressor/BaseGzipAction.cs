@@ -15,40 +15,28 @@ namespace GzipApplication.Compressor
         public void Execute(string inputFilename, string outputFilename)
         {
             ValidateFile(inputFilename);
-
+            
             using var chunkedFileReader = GetFileReader(File.OpenRead(inputFilename));
             // ReSharper disable once AccessToDisposedClosure
             using var fileWriter = GetFileWriter(outputFilename, () => chunkedFileReader.LengthInChunks);
 
-            Process(chunkedFileReader, fileWriter);
+            Execute(chunkedFileReader, fileWriter);
         }
         
-        private void ValidateFile(string inputFilePath)
-        {
-            if (!File.Exists(inputFilePath))
-            {
-                throw new FileNotFoundException(UserMessages.FileIsNotFound, inputFilePath);
-            }
-        }
-
-        protected abstract BaseChunkedFileReader GetFileReader(FileStream fileStream);
-
-        protected abstract BaseChunkedWriter GetFileWriter(string filename, Func<long?> getChunksCount);
-        
-        private void Process(IChunkedFileReader fileReader, BaseChunkedWriter writer)
+        public void Execute(IChunkedReader reader, IChunkedWriter writer)
         {
             const int bufferMultiplier = 2;
 
             using var readSlotsSemaphore = new SemaphoreSlim(CpuBoundWorkQueue.ParallelWorkMax * bufferMultiplier);
 
-            var evaluationStack = new EvaluationQueue();
+            var evaluationStack = new IOBoundQueue();
 
             void ProcessingFunction(OrderedChunk chunk) => 
                 // ReSharper disable once AccessToDisposedClosure
                 CpuBoundWorkQueue.QueueWork(() => ProcessChunk(chunk, readSlotsSemaphore, evaluationStack, writer));
 
             var bufferedReader =
-                new BufferedReader(fileReader, evaluationStack, ProcessingFunction, readSlotsSemaphore);
+                new BufferedReader(reader, evaluationStack, ProcessingFunction, readSlotsSemaphore);
 
             var readingFunction = new Function(nameof(BufferedReader.ReadChunks), 
                 () => bufferedReader.ReadChunks());
@@ -58,9 +46,21 @@ namespace GzipApplication.Compressor
             evaluationStack.Evaluate();
         }
 
+        private void ValidateFile(string inputFilePath)
+        {
+            if (!File.Exists(inputFilePath))
+            {
+                throw new FileNotFoundException(UserMessages.FileIsNotFound, inputFilePath);
+            }
+        }
+
+        protected abstract BaseChunkedReader GetFileReader(FileStream fileStream);
+
+        protected abstract BaseChunkedWriter GetFileWriter(string filename, Func<long?> getChunksCount);
+
         private void ProcessChunk(OrderedChunk chunk, SemaphoreSlim readSlotsSemaphore,
-            EvaluationQueue evaluationQueue,
-            IChunkedDataWriter chunkedWriter)
+            IOBoundQueue ioBoundQueue,
+            IChunkedWriter chunkedWriter)
         {
             var memoryStream = GetProcessedMemoryStream(chunk);
 
@@ -70,10 +70,10 @@ namespace GzipApplication.Compressor
                 Order = chunk.Order
             };
 
-            var writingFunction = new Function(nameof(IChunkedDataWriter.WriteOrAddChunk), 
+            var writingFunction = new Function(nameof(IChunkedWriter.WriteOrAddChunk), 
                 () => chunkedWriter.WriteOrAddChunk(orderedChunk));
             
-            evaluationQueue.Enqueue(writingFunction);
+            ioBoundQueue.Enqueue(writingFunction);
 
             readSlotsSemaphore.Release();
         }

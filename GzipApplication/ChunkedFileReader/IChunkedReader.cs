@@ -2,7 +2,7 @@ using GzipApplication.Data;
 
 namespace GzipApplication.ChunkedFileReader
 {
-    public interface IChunkedFileReader
+    public interface IChunkedReader
     {
         bool HasMore { get; }
 

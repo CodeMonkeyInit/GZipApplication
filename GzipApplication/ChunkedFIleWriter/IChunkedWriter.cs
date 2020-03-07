@@ -2,7 +2,7 @@ using GzipApplication.Data;
 
 namespace GzipApplication.ChunkedFIleWriter
 {
-    public interface IChunkedDataWriter
+    public interface IChunkedWriter
     {
         bool WriteOrAddChunk(OrderedChunk chunk);
     }

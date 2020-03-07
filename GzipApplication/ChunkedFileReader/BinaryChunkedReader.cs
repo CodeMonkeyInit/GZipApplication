@@ -5,11 +5,11 @@ using GzipApplication.Exceptions.User;
 
 namespace GzipApplication.ChunkedFileReader
 {
-    public class BinaryChunkedFileReader : BaseChunkedFileReader, IDisposable
+    public class BinaryChunkedReader : BaseChunkedReader, IDisposable
     {
         private readonly BinaryReader _binaryReader;
 
-        public BinaryChunkedFileReader(FileStream fileStream) : base(fileStream)
+        public BinaryChunkedReader(FileStream fileStream) : base(fileStream)
         {
             _binaryReader = new BinaryReader(fileStream);
         }

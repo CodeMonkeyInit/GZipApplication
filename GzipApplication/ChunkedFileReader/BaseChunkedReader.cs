@@ -6,7 +6,7 @@ using GzipApplication.Exceptions.User;
 
 namespace GzipApplication.ChunkedFileReader
 {
-    public abstract class BaseChunkedFileReader : IChunkedFileReader, IDisposable
+    public abstract class BaseChunkedReader : IChunkedReader, IDisposable
     {
         public abstract bool HasMore { get; }
         public abstract long? LengthInChunks { get; }
@@ -29,7 +29,7 @@ namespace GzipApplication.ChunkedFileReader
             };
         }
 
-        public BaseChunkedFileReader(FileStream fileStream)
+        protected BaseChunkedReader(FileStream fileStream)
         {
             ValidateFileStream(fileStream);
         }

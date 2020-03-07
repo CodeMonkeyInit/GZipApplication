@@ -14,7 +14,8 @@ namespace GzipApplication.Constants
 
         public const string FilepathIsInvalidFormat = "{0} filepath: '{1}' is invalid.";
         
-        public const string UnreadableFileFormat = "Can't read file {0}. Looks like file is in use by another program. Or Program doesn't have enough permissions";
+        public const string UnreadableFileFormat = 
+            "Can't read file {0}. Looks like file is in use by another program. Or Program doesn't have enough permissions";
 
         public const string ArchiveFormatIsNotSupported = "Decompression of this archive format is not supported.";
     }

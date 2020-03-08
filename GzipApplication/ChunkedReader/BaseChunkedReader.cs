@@ -1,10 +1,9 @@
 using System;
 using System.IO;
-using GzipApplication.Constants;
 using GzipApplication.Data;
 using GzipApplication.Exceptions.User;
 
-namespace GzipApplication.ChunkedFileReader
+namespace GzipApplication.ChunkedReader
 {
     public abstract class BaseChunkedReader : IChunkedReader, IDisposable
     {
@@ -29,18 +28,13 @@ namespace GzipApplication.ChunkedFileReader
             };
         }
 
-        protected BaseChunkedReader(FileStream fileStream)
+        protected BaseChunkedReader(Stream fileStream)
         {
-            ValidateFileStream(fileStream);
+            ValidateStream(fileStream);
         }
 
-        private void ValidateFileStream(FileStream stream)
+        private void ValidateStream(Stream stream)
         {
-            if (!stream.CanRead)
-            {
-                throw new UnreadableFileException(string.Format(UserMessages.UnreadableFileFormat, stream.Name));
-            }
-
             if (stream.Position != 0)
             {
                 throw new InvalidArgumentException("Other thread already tried to read a file!");

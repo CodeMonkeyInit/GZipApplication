@@ -1,19 +1,20 @@
 using System;
 using System.IO;
 
-namespace GzipApplication.ChunkedFileReader
+namespace GzipApplication.ChunkedReader
 {
-    public class FixLengthChunkedReader : BaseChunkedReader, IDisposable
+    public class FixLengthChunkedReader : BaseChunkedReader
     {
-        private readonly FileStream _fileStream;
+        private readonly Stream _fileStream;
         private readonly int _chunkSizeInBytes;
-        private const int DefaultChunkSizeInBytes = 1_000_000;
+        
+        public const int DefaultBufferSizeInBytes = 1_000_000;
 
-        public FixLengthChunkedReader(FileStream fileStream, int chunkSizeInBytes = DefaultChunkSizeInBytes) :
+        public FixLengthChunkedReader(Stream fileStream) :
             base(fileStream)
         {
             _fileStream = fileStream ?? throw new ArgumentNullException(nameof(fileStream));
-            _chunkSizeInBytes = chunkSizeInBytes;
+            _chunkSizeInBytes = DefaultBufferSizeInBytes;
         }
 
         public override long? LengthInChunks

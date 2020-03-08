@@ -11,6 +11,7 @@ namespace GzipApplication.Constants
         public const string InvalidArgumentFormat = "Sorry command '{0}' is invalid.";
 
         public static string ValidArgumentsFormat => $"Valid commands: {Commands.Compression}/{Commands.Decompression}";
+        public static string FileIsEmpty = "Sorry, the file you provided is empty, so there is nothing to compress";
 
         public const string FilepathIsInvalidFormat = "{0} filepath: '{1}' is invalid.";
         

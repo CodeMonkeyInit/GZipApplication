@@ -1,22 +1,24 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using GzipApplication.Data;
 
-namespace GzipApplication.ChunkedFIleWriter
+namespace GzipApplication.ChunkedWriter
 {
     public abstract class BaseChunkedWriter : IChunkedWriter, IDisposable
     {
         private readonly Func<long?> _getChunksCount;
+        private readonly ManualResetEvent _writeCompletedEvent;
 
         private long _chunksWritten = 0;
 
         private readonly SortedDictionary<long, OrderedChunk> _sortedDictionary =
             new SortedDictionary<long, OrderedChunk>();
 
-        protected BaseChunkedWriter(Func<long?> getChunksCount)
+        protected BaseChunkedWriter(Func<long?> getChunksCount, ManualResetEvent writeCompletedEvent)
         {
             _getChunksCount = getChunksCount;
+            _writeCompletedEvent = writeCompletedEvent;
         }
 
         public bool WriteOrAddChunk(OrderedChunk chunk)
@@ -37,7 +39,12 @@ namespace GzipApplication.ChunkedFIleWriter
 
             Flush();
 
-            return _chunksWritten == chunksCount;
+            var writeEnded = _chunksWritten == chunksCount;
+            
+            if (writeEnded)
+                _writeCompletedEvent.Set();
+
+            return writeEnded;
         }
 
         protected abstract void Write(OrderedChunk chunk);

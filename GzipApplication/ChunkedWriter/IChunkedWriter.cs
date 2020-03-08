@@ -1,6 +1,6 @@
 using GzipApplication.Data;
 
-namespace GzipApplication.ChunkedFIleWriter
+namespace GzipApplication.ChunkedWriter
 {
     public interface IChunkedWriter
     {

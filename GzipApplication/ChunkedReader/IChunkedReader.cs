@@ -1,6 +1,6 @@
 using GzipApplication.Data;
 
-namespace GzipApplication.ChunkedFileReader
+namespace GzipApplication.ChunkedReader
 {
     public interface IChunkedReader
     {

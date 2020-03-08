@@ -1,10 +1,9 @@
 using System;
 using System.Threading;
 using GzipApplication.Data;
-using GzipApplication.ReaderWriter;
 using GzipApplication.WorkQueue;
 
-namespace GzipApplication.ChunkedFileReader
+namespace GzipApplication.ChunkedReader
 {
     public class BufferedReader
     {

@@ -3,13 +3,13 @@ using System.IO;
 using GzipApplication.Constants;
 using GzipApplication.Exceptions.User;
 
-namespace GzipApplication.ChunkedFileReader
+namespace GzipApplication.ChunkedReader
 {
     public class BinaryChunkedReader : BaseChunkedReader, IDisposable
     {
         private readonly BinaryReader _binaryReader;
 
-        public BinaryChunkedReader(FileStream fileStream) : base(fileStream)
+        public BinaryChunkedReader(Stream fileStream) : base(fileStream)
         {
             _binaryReader = new BinaryReader(fileStream);
         }

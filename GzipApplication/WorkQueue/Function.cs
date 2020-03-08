@@ -1,6 +1,6 @@
 using System;
 
-namespace GzipApplication.ReaderWriter
+namespace GzipApplication.WorkQueue
 {
     public struct Function
     {

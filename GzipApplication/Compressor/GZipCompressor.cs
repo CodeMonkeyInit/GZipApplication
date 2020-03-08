@@ -1,19 +1,20 @@
 using System;
 using System.IO;
 using System.IO.Compression;
-using GzipApplication.ChunkedFileReader;
-using GzipApplication.ChunkedFIleWriter;
+using System.Threading;
+using GzipApplication.ChunkedReader;
+using GzipApplication.ChunkedWriter;
 using GzipApplication.Data;
 
 namespace GzipApplication.Compressor
 {
     public class GZipCompressor : BaseGzipAction
     {
-        protected override BaseChunkedReader GetFileReader(FileStream fileStream) =>
+        protected override BaseChunkedReader GetReader(Stream fileStream) =>
             new FixLengthChunkedReader(fileStream);
 
-        protected override BaseChunkedWriter GetFileWriter(string filename, Func<long?> getChunksCount) =>
-            new BinaryChunkedDataWriter(filename, getChunksCount);
+        protected override BaseChunkedWriter GetFileWriter(Stream output, Func<long?> getChunksCount, ManualResetEvent writeCompletedEvent) =>
+            new BinaryChunkedDataWriter(output, getChunksCount, writeCompletedEvent);
 
         protected override MemoryStream GetProcessedMemoryStream(OrderedChunk chunk)
         {

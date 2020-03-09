@@ -17,7 +17,7 @@ namespace GzipApplication.ChunkedWriter
 
         protected override void Write(OrderedChunk chunk)
         {
-            _stream.Write(chunk.Data.Span);
+            _stream.Write(chunk.RentedData.Array, 0, chunk.RentedData.RentedLength);
         }
 
         protected override void Flush()

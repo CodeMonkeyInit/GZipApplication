@@ -10,24 +10,33 @@ using GzipApplication.Exceptions.User;
 
 namespace GzipApplication.Compressor
 {
-    public class  GZipDecompressor : BaseGzipAction
+    public class GZipDecompressor : BaseGzipAction
     {
-        protected override BaseChunkedReader GetReader(Stream stream) =>
-            new BinaryChunkedReader(stream);
-
-        protected override BaseChunkedWriter GetFileWriter(Stream outputStream, Func<long?> getChunksCount, ManualResetEvent writeCompetedEvent) =>
-            new ChunkWriter(outputStream, getChunksCount, writeCompetedEvent);
-
-        protected override MemoryStream GetProcessedMemoryStream(OrderedChunk chunk)
+        protected override BaseChunkedReader GetReader(Stream stream)
         {
-            using var decompressed = new MemoryStream();
+            return new BinaryChunkedReader(stream);
+        }
 
-            using var compressedDataStream = new MemoryStream(chunk.Data.ToArray());
+        protected override BaseChunkedWriter GetFileWriter(Stream outputStream, Func<long?> getChunksCount,
+            ManualResetEvent writeCompetedEvent)
+        {
+            return new ChunkWriter(outputStream, getChunksCount, writeCompetedEvent);
+        }
+
+        protected override RentedArray<byte> GetProcessedData(OrderedChunk chunk)
+        {
+            var length = ApplicationConstants.BufferSizeInBytes;
+            var rentedBytes = GzipArrayPool.SharedBytesPool.Rent(length);
+
+            using var decompressedStream = new MemoryStream(rentedBytes, 0, length, true);
+            decompressedStream.SetLength(0);
+
+            using var compressedDataStream = new MemoryStream(chunk.RentedData.Array, 0, chunk.RentedData.RentedLength);
             using var gZipStream = new GZipStream(compressedDataStream, CompressionMode.Decompress);
 
             try
             {
-                gZipStream.CopyTo(decompressed);
+                gZipStream.CopyTo(decompressedStream);
                 gZipStream.Flush();
             }
             catch (InvalidDataException e)
@@ -35,7 +44,7 @@ namespace GzipApplication.Compressor
                 throw new InvalidArchiveFormatException(UserMessages.ArchiveFormatIsNotSupported, e);
             }
 
-            return decompressed;
+            return new RentedArray<byte>(rentedBytes, (int) decompressedStream.Length, GzipArrayPool.SharedBytesPool);
         }
     }
 }

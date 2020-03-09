@@ -1,23 +1,22 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using GzipApplication.Exceptions;
 using GzipApplication.Exceptions.User;
 
 namespace GzipApplication
 {
-    
     public class Program
     {
         private const int ProgramFailedExitCode = 1;
         private const int ProgramSucceededExitCode = 0;
+
 
         public static int Main(string[] args)
         {
             var stopwatch = new Stopwatch();
 
             var argumentsParser = new ArgumentsParser.ArgumentsParser();
-            
+
             SubscribeToThreadExceptions();
 
             try

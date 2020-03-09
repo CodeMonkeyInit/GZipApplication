@@ -10,21 +10,31 @@ namespace GzipApplication.Compressor
 {
     public class GZipCompressor : BaseGzipAction
     {
-        protected override BaseChunkedReader GetReader(Stream fileStream) =>
-            new FixLengthChunkedReader(fileStream);
-
-        protected override BaseChunkedWriter GetFileWriter(Stream output, Func<long?> getChunksCount, ManualResetEvent writeCompletedEvent) =>
-            new BinaryChunkedDataWriter(output, getChunksCount, writeCompletedEvent);
-
-        protected override MemoryStream GetProcessedMemoryStream(OrderedChunk chunk)
+        protected override BaseChunkedReader GetReader(Stream fileStream)
         {
-            using var memoryStream = new MemoryStream();
-            using var gZipStream = new GZipStream(memoryStream, CompressionMode.Compress);
+            return new FixLengthChunkedReader(fileStream);
+        }
 
-            gZipStream.Write(chunk.Data.Span);
+        protected override BaseChunkedWriter GetFileWriter(Stream output, Func<long?> getChunksCount,
+            ManualResetEvent writeCompletedEvent)
+        {
+            return new BinaryChunkedDataWriter(output, getChunksCount, writeCompletedEvent);
+        }
+
+        protected override RentedArray<byte> GetProcessedData(OrderedChunk chunk)
+        {
+            var length = CalculateArchiveMaxSize(chunk.RentedData.RentedLength);
+            var rentedArray = GzipArrayPool.SharedBytesPool.Rent(length);
+
+            using var compressedStream = new MemoryStream(rentedArray, 0, length, true);
+            compressedStream.SetLength(0);
+
+            using var gZipStream = new GZipStream(compressedStream, CompressionMode.Compress);
+
+            gZipStream.Write(chunk.RentedData.Array, 0, chunk.RentedData.RentedLength);
             gZipStream.Flush();
 
-            return memoryStream;
+            return new RentedArray<byte>(rentedArray, (int) compressedStream.Length, GzipArrayPool.SharedBytesPool);
         }
     }
 }

@@ -8,12 +8,13 @@ namespace GzipApplication.ChunkedWriter
     public abstract class BaseChunkedWriter : IChunkedWriter, IDisposable
     {
         private readonly Func<long?> _getChunksCount;
-        private readonly ManualResetEvent _writeCompletedEvent;
-
-        private long _chunksWritten = 0;
 
         private readonly SortedDictionary<long, OrderedChunk> _sortedDictionary =
             new SortedDictionary<long, OrderedChunk>();
+
+        private readonly ManualResetEvent _writeCompletedEvent;
+
+        private long _chunksWritten;
 
         protected BaseChunkedWriter(Func<long?> getChunksCount, ManualResetEvent writeCompletedEvent)
         {
@@ -23,8 +24,8 @@ namespace GzipApplication.ChunkedWriter
 
         public bool WriteOrAddChunk(OrderedChunk chunk)
         {
-            long? chunksCount = _getChunksCount();
-            
+            var chunksCount = _getChunksCount();
+
             _sortedDictionary.Add(chunk.Order, chunk);
 
             while (_sortedDictionary.ContainsKey(_chunksWritten))
@@ -33,6 +34,8 @@ namespace GzipApplication.ChunkedWriter
 
                 Write(orderedChunk);
 
+                orderedChunk.RentedData.Dispose();
+
                 _sortedDictionary.Remove(_chunksWritten);
                 _chunksWritten++;
             }
@@ -40,17 +43,17 @@ namespace GzipApplication.ChunkedWriter
             Flush();
 
             var writeEnded = _chunksWritten == chunksCount;
-            
+
             if (writeEnded)
                 _writeCompletedEvent.Set();
 
             return writeEnded;
         }
 
+        public abstract void Dispose();
+
         protected abstract void Write(OrderedChunk chunk);
 
         protected abstract void Flush();
-
-        public abstract void Dispose();
     }
 }

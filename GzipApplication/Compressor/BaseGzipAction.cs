@@ -14,7 +14,7 @@ namespace GzipApplication.Compressor
     {
         public void Execute(string inputFilename, string outputFilename)
         {
-            using var inputFile = GetInputFile(inputFilename);;
+            using var inputFile = GetInputFile(inputFilename);
             using var outputFile = File.Create(outputFilename);
 
             Execute(inputFile, outputFile);
@@ -35,16 +35,16 @@ namespace GzipApplication.Compressor
         private void Execute(IChunkedReader reader, IChunkedWriter writer,
             ManualResetEvent writeCompletedEvent)
         {
-            const int bufferMultiplier = 2;
-            
-            using var readSlotsSemaphore = new SemaphoreSlim(CpuBoundWorkQueue.ParallelWorkMax * bufferMultiplier);
+            using var readSlotsSemaphore = new SemaphoreSlim(ApplicationConstants.BufferSlots);
 
             var evaluationStack = new IOBoundQueue();
 
-            void ProcessingFunction(OrderedChunk chunk) =>
+            void ProcessingFunction(OrderedChunk chunk)
+            {
                 // ReSharper disable once AccessToDisposedClosure
                 CpuBoundWorkQueue.Instance.QueueWork(() =>
                     ProcessChunk(chunk, readSlotsSemaphore, evaluationStack, writer));
+            }
 
             var bufferedReader =
                 new BufferedReader(reader, evaluationStack, ProcessingFunction, readSlotsSemaphore);
@@ -60,11 +60,11 @@ namespace GzipApplication.Compressor
         private FileStream GetInputFile(string inputFilePath)
         {
             var fileInfo = new FileInfo(inputFilePath);
-            
+
             if (!fileInfo.Exists)
                 throw new FileNotFoundException(UserMessages.FileIsNotFound, inputFilePath);
 
-            
+
             if (fileInfo.Length == 0)
                 throw new InvalidFilePath(UserMessages.FileIsEmpty);
 
@@ -80,11 +80,13 @@ namespace GzipApplication.Compressor
             IOBoundQueue ioBoundQueue,
             IChunkedWriter chunkedWriter)
         {
-            var memoryStream = GetProcessedMemoryStream(chunk);
+            var processedData = GetProcessedData(chunk);
+
+            chunk.RentedData.Dispose();
 
             var orderedChunk = new OrderedChunk
             {
-                Data = memoryStream.ToArray(),
+                RentedData = processedData,
                 Order = chunk.Order
             };
 
@@ -96,6 +98,22 @@ namespace GzipApplication.Compressor
             readSlotsSemaphore.Release();
         }
 
-        protected abstract MemoryStream GetProcessedMemoryStream(OrderedChunk chunk);
+        public static int CalculateBufferOverhead(int bufferSize)
+        {
+            const int gzipOverheadOver32KbInBytes = 5;
+
+            var bufferOverhead = (int) Math.Ceiling((double) bufferSize / 32) * gzipOverheadOver32KbInBytes;
+
+            return bufferOverhead;
+        }
+
+        public static int CalculateArchiveMaxSize(int bufferSize)
+        {
+            return bufferSize + ApplicationConstants.GzipStreamHeaderAndFooterInBytes +
+                   CalculateBufferOverhead(bufferSize);
+        }
+
+
+        protected abstract RentedArray<byte> GetProcessedData(OrderedChunk chunk);
     }
 }

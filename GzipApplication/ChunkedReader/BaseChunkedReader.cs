@@ -7,42 +7,36 @@ namespace GzipApplication.ChunkedReader
 {
     public abstract class BaseChunkedReader : IChunkedReader, IDisposable
     {
-        public abstract bool HasMore { get; }
-        public abstract long? LengthInChunks { get; }
-        
-        protected long ChunksRead = 0;
-        
-        public OrderedChunk ReadChunk()
-        {
-            if (!HasMore)
-            {
-                throw new InvalidOperationException("All chunks were already read.");
-            }
-
-            var readBytes = ReadBytes();
-
-            return new OrderedChunk
-            {
-                Data = readBytes,
-                Order = ChunksRead++
-            };
-        }
+        protected long ChunksRead;
 
         protected BaseChunkedReader(Stream fileStream)
         {
             ValidateStream(fileStream);
         }
 
-        private void ValidateStream(Stream stream)
+        public abstract bool HasMore { get; }
+        public abstract long? LengthInChunks { get; }
+
+        public OrderedChunk ReadChunk()
         {
-            if (stream.Position != 0)
+            if (!HasMore) throw new InvalidOperationException("All chunks were already read.");
+
+            var readBytes = ReadBytes();
+
+            return new OrderedChunk
             {
-                throw new InvalidArgumentException("Other thread already tried to read a file!");
-            }
+                RentedData = readBytes,
+                Order = ChunksRead++
+            };
         }
 
-        protected abstract byte[] ReadBytes();
-
         public abstract void Dispose();
+
+        private void ValidateStream(Stream stream)
+        {
+            if (stream.Position != 0) throw new InvalidArgumentException("Other thread already tried to read a file!");
+        }
+
+        protected abstract RentedArray<byte> ReadBytes();
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using GzipApplication.Constants;
 using GzipApplication.Data;
 using GzipApplication.WorkQueue;
 
@@ -7,12 +8,13 @@ namespace GzipApplication.ChunkedReader
 {
     public class BufferedReader
     {
-        private readonly IChunkedReader _reader;
         private readonly IOBoundQueue _ioBoundQueue;
         private readonly Action<OrderedChunk> _onRead;
+        private readonly IChunkedReader _reader;
         private readonly SemaphoreSlim _readSlotsSemaphore;
 
-        public BufferedReader(IChunkedReader reader, IOBoundQueue ioBoundQueue, Action<OrderedChunk> onRead, SemaphoreSlim readSlotsSemaphore)
+        public BufferedReader(IChunkedReader reader, IOBoundQueue ioBoundQueue, Action<OrderedChunk> onRead,
+            SemaphoreSlim readSlotsSemaphore)
         {
             _reader = reader;
             _ioBoundQueue = ioBoundQueue;
@@ -20,34 +22,32 @@ namespace GzipApplication.ChunkedReader
             _readSlotsSemaphore = readSlotsSemaphore;
         }
 
-        private readonly int _bufferSize = CpuBoundWorkQueue.ParallelWorkMax * 2;
-        
         public bool ReadChunks()
-        {   
-            int readCount = 0;
+        {
+            var readCount = 0;
 
-            //TODO this could lead to threads starvation
-            bool BufferIsFull() => readCount >= _bufferSize;
+            bool BufferIsFull()
+            {
+                return readCount >= ApplicationConstants.BufferSlots;
+            }
 
             while (_reader.HasMore && !BufferIsFull() && _readSlotsSemaphore.Wait(TimeSpan.Zero))
             {
-                OrderedChunk chunk = _reader.ReadChunk();
+                var chunk = _reader.ReadChunk();
 
                 readCount++;
 
                 _onRead(chunk);
             }
 
-            bool isCompleted = !_reader.HasMore;
+            var isCompleted = !_reader.HasMore;
 
             if (!isCompleted)
-            {
                 _ioBoundQueue.Enqueue(new Function
                 {
                     Name = nameof(ReadChunks),
                     Payload = ReadChunks
                 });
-            }
 
             return isCompleted;
         }

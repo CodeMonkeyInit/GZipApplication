@@ -12,7 +12,7 @@ namespace GzipApplication.Data
             ? throw new ArrayDisposedException("Array you are trying to access was returned to ArrayPool")
             : _rentedArray;
 
-        public Span<T> AsSpan => new Span<T>(Array, 0, RentedLength);
+        public Span<T> AsBoundedSpan => new Span<T>(Array, 0, RentedLength);
 
         public int RentedLength;
 

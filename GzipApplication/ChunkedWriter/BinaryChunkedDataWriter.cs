@@ -18,7 +18,7 @@ namespace GzipApplication.ChunkedWriter
         protected override void Write(OrderedChunk chunk)
         {
             _binaryWriter.Write(chunk.RentedData.RentedLength);
-            _binaryWriter.Write(chunk.RentedData.Array, 0, chunk.RentedData.RentedLength);
+            _binaryWriter.Write(chunk.RentedData.AsBoundedSpan);
         }
 
         protected override void Flush()

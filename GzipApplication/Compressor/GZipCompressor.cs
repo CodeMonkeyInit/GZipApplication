@@ -31,7 +31,7 @@ namespace GzipApplication.Compressor
 
             using var gZipStream = new GZipStream(compressedStream, CompressionMode.Compress);
 
-            gZipStream.Write(chunk.RentedData.Array, 0, chunk.RentedData.RentedLength);
+            gZipStream.Write(chunk.RentedData.AsBoundedSpan);
             gZipStream.Flush();
 
             return new RentedArray<byte>(rentedArray, (int) compressedStream.Length, GzipArrayPool.SharedBytesPool);

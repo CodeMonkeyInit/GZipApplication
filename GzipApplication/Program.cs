@@ -1,12 +1,10 @@
 using System;
-using System.Diagnostics;
 using System.IO;
-using GzipApplication.Exceptions;
+using GzipApplication.ArgumentsParser;
 using GzipApplication.Exceptions.User;
 
 namespace GzipApplication
 {
-    
     public class Program
     {
         private const int ProgramFailedExitCode = 1;
@@ -14,23 +12,19 @@ namespace GzipApplication
 
         public static int Main(string[] args)
         {
-            var stopwatch = new Stopwatch();
+            var argumentsParser = new ApplicationArgumentsParser();
 
-            var argumentsParser = new ArgumentsParser.ArgumentsParser();
-            
             SubscribeToThreadExceptions();
 
             try
             {
-                var action = argumentsParser.GetAction(args);
+                var action = argumentsParser.ParseArguments(args);
 
-                stopwatch.Start();
+                Console.WriteLine("Execution started. Please wait...");
 
                 action();
 
-                stopwatch.Stop();
-
-                Console.WriteLine($"Done in {stopwatch.Elapsed}");
+                Console.WriteLine("Execution complete");
 
                 return ProgramSucceededExitCode;
             }

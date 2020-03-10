@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using GzipApplication.ChunkedReader;
-using GzipApplication.Compressor;
+using GzipApplication.Constants;
+using GzipApplication.GZip;
 using GZipApplication.Tests.TestData;
 using Xunit;
 
@@ -9,7 +9,7 @@ namespace GZipApplication.Tests
 {
     public class GZipIntegrationTests
     {
-        [MemberData(nameof(GetBufferData))]
+        [MemberData(nameof(GetBufferTestData))]
         [Theory]
         public void OriginalDataMatchesDecompressed(UncompressedData dataToCompress)
         {
@@ -46,37 +46,48 @@ namespace GZipApplication.Tests
             return decompressedBytes;
         }
 
-
-        public static TheoryData<UncompressedData> GetBufferData() =>
-            new TheoryData<UncompressedData>
+        public static TheoryData<UncompressedData> GetBufferTestData()
+        {
+            return new TheoryData<UncompressedData>
             {
                 DataSizeTwiceBiggerThanBuffer,
                 DataSizeBiggerThanBufferByOne,
                 DataSizeTwiceSmallerThanBuffer,
                 DataSizeSmallerThanBufferByOne,
+                DataSizeTwoTimesBiggerThanProcessorsCount,
+                DataSizeFourTimesBiggerThanProcessorsCount,
                 DataSizeEqualsOneByte
             };
+        }
 
         private static UncompressedData DataSizeTwiceBiggerThanBuffer =>
-            GetHighlyCompressibleData(FixLengthChunkedReader.DefaultBufferSizeInBytes * 2);
+            GetRandomData(ApplicationConstants.BufferSizeInBytes * 2);
 
         private static UncompressedData DataSizeBiggerThanBufferByOne =>
-            GetHighlyCompressibleData(FixLengthChunkedReader.DefaultBufferSizeInBytes + 1);
+            GetRandomData(ApplicationConstants.BufferSizeInBytes + 1);
 
         private static UncompressedData DataSizeTwiceSmallerThanBuffer =>
-            GetHighlyCompressibleData(FixLengthChunkedReader.DefaultBufferSizeInBytes / 2);
+            GetRandomData(ApplicationConstants.BufferSizeInBytes / 2);
 
         private static UncompressedData DataSizeSmallerThanBufferByOne =>
-            GetHighlyCompressibleData(FixLengthChunkedReader.DefaultBufferSizeInBytes - 1);
+            GetRandomData(ApplicationConstants.BufferSizeInBytes - 1);
+
+        private static UncompressedData DataSizeTwoTimesBiggerThanProcessorsCount =>
+            GetRandomData(ApplicationConstants.BufferSizeInBytes * Environment.ProcessorCount * 2);
+
+        private static UncompressedData DataSizeFourTimesBiggerThanProcessorsCount =>
+            GetRandomData(ApplicationConstants.BufferSizeInBytes * Environment.ProcessorCount * 4);
 
         private static UncompressedData DataSizeEqualsOneByte =>
-            GetHighlyCompressibleData(1);
+            GetRandomData(1);
 
-
-        private static UncompressedData GetHighlyCompressibleData(int size)
+        private static UncompressedData GetRandomData(int size)
         {
+            var random = new Random();
             var bytes = new byte[size];
-            
+
+            random.NextBytes(bytes);
+
             return new UncompressedData(bytes);
         }
     }

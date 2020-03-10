@@ -1,12 +1,11 @@
 using System;
-using GzipApplication.Compressor;
 using GzipApplication.Constants;
-using GzipApplication.Exceptions;
 using GzipApplication.Exceptions.User;
+using GzipApplication.GZip;
 
 namespace GzipApplication.ArgumentsParser
 {
-    public class ArgumentsParser : IArgumentsParser
+    public class ApplicationArgumentsParser : IArgumentsParser
     {
         private const int CommandIndex = 0;
         private const int InputFileIndex = 1;
@@ -14,7 +13,7 @@ namespace GzipApplication.ArgumentsParser
 
         private const int RequiredArgumentsCount = 3;
 
-        public Action GetAction(string[] arguments)
+        public Action ParseArguments(string[] arguments)
         {
             if (arguments.Length == 0)
                 throw new EmptyArgumentsException($"{UserMessages.EmptyArguments} {UserMessages.SpecifyArguments}");

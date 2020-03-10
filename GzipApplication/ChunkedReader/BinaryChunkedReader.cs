@@ -1,39 +1,38 @@
-using System;
 using System.IO;
-using GzipApplication.Constants;
-using GzipApplication.Exceptions.User;
+using GzipApplication.Data;
 
 namespace GzipApplication.ChunkedReader
 {
-    public class BinaryChunkedReader : BaseChunkedReader, IDisposable
+    /// <summary>
+    ///     Uses <see cref="BinaryReader"/> to consume data.
+    /// <inheritdoc cref="BaseChunkedReader"/>
+    /// </summary>
+    public class BinaryChunkedReader : BaseChunkedReader
     {
         private readonly BinaryReader _binaryReader;
 
-        public BinaryChunkedReader(Stream fileStream) : base(fileStream)
+        public BinaryChunkedReader(Stream stream)
         {
-            _binaryReader = new BinaryReader(fileStream);
+            _binaryReader = new BinaryReader(stream);
         }
 
         public override bool HasMore => _binaryReader.BaseStream.Position != _binaryReader.BaseStream.Length;
         public override long? LengthInChunks => HasMore ? default : ChunksRead;
 
-        protected override byte[] ReadBytes()
-        {
-            var length = _binaryReader.ReadInt32();
-
-            if (length < 0)
-            {
-                throw new InvalidArchiveFormatException(UserMessages.ArchiveFormatIsNotSupported);
-            }
-
-            var readBytes = _binaryReader.ReadBytes(length);
-
-            return readBytes;
-        }
-
         public override void Dispose()
         {
             _binaryReader.Dispose();
+        }
+
+        protected override RentedArray<byte> ReadBytes()
+        {
+            var length = _binaryReader.ReadInt32();
+
+            var rentedArray = GzipArrayPool.SharedBytesPool.Rent(length);
+
+            _binaryReader.Read(rentedArray, 0, length);
+
+            return new RentedArray<byte>(rentedArray, length, GzipArrayPool.SharedBytesPool);
         }
     }
 }

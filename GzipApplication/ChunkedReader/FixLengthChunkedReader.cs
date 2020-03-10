@@ -1,20 +1,25 @@
 using System;
 using System.IO;
+using GzipApplication.Constants;
+using GzipApplication.Data;
 
 namespace GzipApplication.ChunkedReader
 {
+    /// <summary>
+    ///     Reads data in fixed-length chunks. Chunk size gathered from <see cref="ApplicationConstants"/>
+    /// <inheritdoc cref="BaseChunkedReader"/>
+    /// </summary>
     public class FixLengthChunkedReader : BaseChunkedReader
     {
-        private readonly Stream _fileStream;
         private readonly int _chunkSizeInBytes;
-        
-        public const int DefaultBufferSizeInBytes = 1_000_000;
+        private readonly Stream _fileStream;
 
-        public FixLengthChunkedReader(Stream fileStream) :
-            base(fileStream)
+        private long? _lengthInChunks;
+
+        public FixLengthChunkedReader(Stream stream)
         {
-            _fileStream = fileStream ?? throw new ArgumentNullException(nameof(fileStream));
-            _chunkSizeInBytes = DefaultBufferSizeInBytes;
+            _fileStream = stream;
+            _chunkSizeInBytes = ApplicationConstants.BufferSizeInBytes;
         }
 
         public override long? LengthInChunks
@@ -22,29 +27,27 @@ namespace GzipApplication.ChunkedReader
             get
             {
                 if (!_lengthInChunks.HasValue)
-                    _lengthInChunks = (long) Math.Ceiling(((double) _fileStream.Length) / _chunkSizeInBytes);
+                    _lengthInChunks = (long) Math.Ceiling((double) _fileStream.Length / _chunkSizeInBytes);
 
                 return _lengthInChunks.Value;
             }
         }
 
-        private long? _lengthInChunks;
-
         public override bool HasMore => ChunksRead != LengthInChunks;
 
-        protected override byte[] ReadBytes()
+        protected override RentedArray<byte> ReadBytes()
         {
-            long leftToRead = _fileStream.Length - _fileStream.Position;
+            var leftToRead = _fileStream.Length - _fileStream.Position;
 
             var chunkSizeInBytes = leftToRead >= _chunkSizeInBytes
                 ? _chunkSizeInBytes
                 : (int) leftToRead;
 
-            var readBytes = new byte[chunkSizeInBytes];
+            var rentedArray = GzipArrayPool.SharedBytesPool.Rent(chunkSizeInBytes);
 
-            _fileStream.Read(readBytes, 0, chunkSizeInBytes);
+            _fileStream.Read(rentedArray, 0, chunkSizeInBytes);
 
-            return readBytes;
+            return new RentedArray<byte>(rentedArray, chunkSizeInBytes, GzipArrayPool.SharedBytesPool);
         }
 
         public override void Dispose()

@@ -4,6 +4,9 @@ using System.Threading;
 
 namespace GzipApplication.WorkQueue
 {
+    /// <summary>
+    ///     Queue for IO bound operations like reading/writing from disk.
+    /// </summary>
     public class IOBoundQueue
     {
         private readonly ConcurrentQueue<Function> _actions = new ConcurrentQueue<Function>();
@@ -16,6 +19,14 @@ namespace GzipApplication.WorkQueue
             _newActionEnqueued.Set();
         }
 
+        /// <summary>
+        ///     Evaluates members of queue until eventWaitHandle is set.
+        /// 
+        ///     <remarks>
+        ///         All members will be executed on calling thread.
+        ///     </remarks> 
+        /// </summary>
+        /// <param name="eventWaitHandle">Handle that signals that evaluation should end.</param>
         public void Evaluate(EventWaitHandle eventWaitHandle)
         {
             do

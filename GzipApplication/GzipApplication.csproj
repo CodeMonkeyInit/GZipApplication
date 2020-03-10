@@ -3,7 +3,11 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <Nullable>Enable</Nullable>
+        <OutputType>Exe</OutputType>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <UserSecretsId>dotnet-GzipApplication-1396A9B9-2C32-4C25-9188-B66055FC6130</UserSecretsId>
+        <PublishSingleFile>true</PublishSingleFile>
+        <PublishTrimmed>true</PublishTrimmed>
     </PropertyGroup>
 
 </Project>

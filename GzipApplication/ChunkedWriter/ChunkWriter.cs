@@ -9,6 +9,7 @@ namespace GzipApplication.ChunkedWriter
     {
         private readonly Stream _stream;
 
+        /// <inheritdoc/>
         public ChunkWriter(Stream outputStream, Func<long?> getChunksCount, ManualResetEvent writeCompletedEvent) :
             base(getChunksCount, writeCompletedEvent)
         {
@@ -17,7 +18,7 @@ namespace GzipApplication.ChunkedWriter
 
         protected override void Write(OrderedChunk chunk)
         {
-            _stream.Write(chunk.Data.Span);
+            _stream.Write(chunk.RentedData.AsBoundedSpan);
         }
 
         protected override void Flush()

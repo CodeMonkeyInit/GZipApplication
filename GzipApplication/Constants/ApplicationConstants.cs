@@ -1,4 +1,3 @@
-using GzipApplication.Compressor;
 using GzipApplication.WorkQueue;
 
 namespace GzipApplication.Constants
@@ -13,9 +12,5 @@ namespace GzipApplication.Constants
         public const int GzipStreamHeaderAndFooterInBytes = 25;
 
         public static readonly int BufferSlots = CpuBoundWorkQueue.ParallelWorkMax * 2;
-
-        public static readonly int CompressedChunkMaxSize =
-            BufferSizeInBytes + GzipStreamHeaderAndFooterInBytes + BaseGzipAction
-                .CalculateBufferOverhead(BufferSizeInBytes);
     }
 }

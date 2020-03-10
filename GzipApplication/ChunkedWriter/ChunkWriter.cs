@@ -9,6 +9,7 @@ namespace GzipApplication.ChunkedWriter
     {
         private readonly Stream _stream;
 
+        /// <inheritdoc/>
         public ChunkWriter(Stream outputStream, Func<long?> getChunksCount, ManualResetEvent writeCompletedEvent) :
             base(getChunksCount, writeCompletedEvent)
         {

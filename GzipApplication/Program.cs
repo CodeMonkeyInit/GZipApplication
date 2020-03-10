@@ -10,7 +10,6 @@ namespace GzipApplication
         private const int ProgramFailedExitCode = 1;
         private const int ProgramSucceededExitCode = 0;
 
-
         public static int Main(string[] args)
         {
             var stopwatch = new Stopwatch();
@@ -21,7 +20,7 @@ namespace GzipApplication
 
             try
             {
-                var action = argumentsParser.GetAction(args);
+                var action = argumentsParser.ParseArguments(args);
 
                 stopwatch.Start();
 

@@ -6,6 +6,10 @@ using GzipApplication.WorkQueue;
 
 namespace GzipApplication.ChunkedReader
 {
+    /// <summary>
+    ///     Reads data and fills buffer.
+    /// <remarks>Because this reader intended for reading from IO it is not thread safe.</remarks>
+    /// </summary>
     public class BufferedReader
     {
         private readonly IOBoundQueue _ioBoundQueue;
@@ -22,14 +26,16 @@ namespace GzipApplication.ChunkedReader
             _readSlotsSemaphore = readSlotsSemaphore;
         }
 
+
+        /// <summary>
+        ///     Read chunks of data using reader until buffer is full or no more read slots are available.
+        /// </summary>
+        /// <returns>true of all chunks were read or false if there is more chunks to read.</returns>
         public bool ReadChunks()
         {
             var readCount = 0;
 
-            bool BufferIsFull()
-            {
-                return readCount >= ApplicationConstants.BufferSlots;
-            }
+            bool BufferIsFull() => readCount >= ApplicationConstants.BufferSlots;
 
             while (_reader.HasMore && !BufferIsFull() && _readSlotsSemaphore.Wait(TimeSpan.Zero))
             {
@@ -43,11 +49,13 @@ namespace GzipApplication.ChunkedReader
             var isCompleted = !_reader.HasMore;
 
             if (!isCompleted)
+            {
                 _ioBoundQueue.Enqueue(new Function
                 {
                     Name = nameof(ReadChunks),
                     Payload = ReadChunks
                 });
+            }
 
             return isCompleted;
         }

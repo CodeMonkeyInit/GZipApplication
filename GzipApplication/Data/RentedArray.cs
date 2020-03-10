@@ -4,6 +4,10 @@ using GzipApplication.Exceptions;
 
 namespace GzipApplication.Data
 {
+    /// <summary>
+    ///     Array rented from <see cref="ArrayPool{T}"/>
+    /// </summary>
+    /// <typeparam name="T">Type of data</typeparam>
     public struct RentedArray<T> : IDisposable
     {
         public bool Disposed { get; private set; }
@@ -12,6 +16,9 @@ namespace GzipApplication.Data
             ? throw new ArrayDisposedException("Array you are trying to access was returned to ArrayPool")
             : _rentedArray;
 
+        /// <summary>
+        /// Returns <see cref="Span{T}"/> which is limited by requested length
+        /// </summary>
         public Span<T> AsBoundedSpan => new Span<T>(Array, 0, RentedLength);
 
         public int RentedLength;
@@ -27,6 +34,9 @@ namespace GzipApplication.Data
             Disposed = false;
         }
 
+        /// <summary>
+        ///     Returns array to pool where it was rented from.
+        /// </summary>
         public void Dispose()
         {
             _rentedFrom.Return(_rentedArray);

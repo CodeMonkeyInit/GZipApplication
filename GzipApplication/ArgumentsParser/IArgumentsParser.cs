@@ -4,6 +4,6 @@ namespace GzipApplication.ArgumentsParser
 {
     public interface IArgumentsParser
     {
-        Action GetAction(string[] arguments);
+        Action ParseArguments(string[] arguments);
     }
 }

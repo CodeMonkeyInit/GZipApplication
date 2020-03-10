@@ -4,29 +4,29 @@ using System.Threading;
 
 namespace GzipApplication.WorkQueue
 {
+    /// <summary>
+    ///     Queue intended for CPU bound work.
+    /// </summary>
     public class CpuBoundWorkQueue
     {
         public static readonly int ParallelWorkMax = Environment.ProcessorCount;
 
         public static CpuBoundWorkQueue Instance => _instance.Value;
-        
-        
+
         private readonly ConcurrentQueue<Action> _concurrentQueue = new ConcurrentQueue<Action>();
         private readonly SemaphoreSlim _workQueuedSemaphore = new SemaphoreSlim(0);
-        
+
         private readonly Thread[] _threads;
-        
-        private static readonly Lazy<CpuBoundWorkQueue> _instance  = new Lazy<CpuBoundWorkQueue>(
+
+        private static readonly Lazy<CpuBoundWorkQueue> _instance = new Lazy<CpuBoundWorkQueue>(
             () => new CpuBoundWorkQueue());
 
-        
-        public bool QueueWork(Action someWork)
+
+        public void QueueWork(Action someWork)
         {
             _concurrentQueue.Enqueue(someWork);
 
             _workQueuedSemaphore.Release();
-
-            return true;
         }
 
         private void Work()
@@ -41,7 +41,7 @@ namespace GzipApplication.WorkQueue
                 }
             }
         }
-        
+
         private CpuBoundWorkQueue()
         {
             _threads = new Thread[ParallelWorkMax];

@@ -1,9 +1,10 @@
 using System;
-using System.Runtime.Serialization;
 
 namespace GzipApplication.Exceptions.User
 {
-    
+    /// <summary>
+    ///     Exception that should be readable by user.
+    /// </summary>
     public class UserReadableException : Exception
     {
         public UserReadableException(string message) : base(message)

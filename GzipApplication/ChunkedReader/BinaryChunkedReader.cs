@@ -1,18 +1,19 @@
-using System;
 using System.IO;
-using GzipApplication.Constants;
 using GzipApplication.Data;
-using GzipApplication.Exceptions.User;
 
 namespace GzipApplication.ChunkedReader
 {
-    public class BinaryChunkedReader : BaseChunkedReader, IDisposable
+    /// <summary>
+    ///     Uses <see cref="BinaryReader"/> to consume data.
+    /// <inheritdoc cref="BaseChunkedReader"/>
+    /// </summary>
+    public class BinaryChunkedReader : BaseChunkedReader
     {
         private readonly BinaryReader _binaryReader;
 
-        public BinaryChunkedReader(Stream fileStream) : base(fileStream)
+        public BinaryChunkedReader(Stream stream)
         {
-            _binaryReader = new BinaryReader(fileStream);
+            _binaryReader = new BinaryReader(stream);
         }
 
         public override bool HasMore => _binaryReader.BaseStream.Position != _binaryReader.BaseStream.Length;
@@ -26,8 +27,6 @@ namespace GzipApplication.ChunkedReader
         protected override RentedArray<byte> ReadBytes()
         {
             var length = _binaryReader.ReadInt32();
-
-            if (length < 0) throw new InvalidArchiveFormatException(UserMessages.ArchiveFormatIsNotSupported);
 
             var rentedArray = GzipArrayPool.SharedBytesPool.Rent(length);
 

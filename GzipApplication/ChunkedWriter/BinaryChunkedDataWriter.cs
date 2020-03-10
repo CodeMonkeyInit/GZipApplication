@@ -5,14 +5,20 @@ using GzipApplication.Data;
 
 namespace GzipApplication.ChunkedWriter
 {
+    /// <summary>
+    /// <inheritdoc/>
+    ///     Writes chunk length and contents using <see cref="BinaryWriter"/>
+    /// </summary>
     public class BinaryChunkedDataWriter : BaseChunkedWriter
     {
         private readonly BinaryWriter _binaryWriter;
 
-        public BinaryChunkedDataWriter(Stream output, Func<long?> getChunksCount, ManualResetEvent writeCompletedEvent)
+        /// <inheritdoc />
+        public BinaryChunkedDataWriter(Stream outputToWrite, Func<long?> getChunksCount,
+            ManualResetEvent writeCompletedEvent)
             : base(getChunksCount, writeCompletedEvent)
         {
-            _binaryWriter = new BinaryWriter(output);
+            _binaryWriter = new BinaryWriter(outputToWrite);
         }
 
         protected override void Write(OrderedChunk chunk)

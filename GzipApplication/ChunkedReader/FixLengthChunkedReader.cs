@@ -5,6 +5,10 @@ using GzipApplication.Data;
 
 namespace GzipApplication.ChunkedReader
 {
+    /// <summary>
+    ///     Reads data in fixed-length chunks. Chunk size gathered from <see cref="ApplicationConstants"/>
+    /// <inheritdoc cref="BaseChunkedReader"/>
+    /// </summary>
     public class FixLengthChunkedReader : BaseChunkedReader
     {
         private readonly int _chunkSizeInBytes;
@@ -12,10 +16,9 @@ namespace GzipApplication.ChunkedReader
 
         private long? _lengthInChunks;
 
-        public FixLengthChunkedReader(Stream fileStream) :
-            base(fileStream)
+        public FixLengthChunkedReader(Stream stream)
         {
-            _fileStream = fileStream ?? throw new ArgumentNullException(nameof(fileStream));
+            _fileStream = stream;
             _chunkSizeInBytes = ApplicationConstants.BufferSizeInBytes;
         }
 

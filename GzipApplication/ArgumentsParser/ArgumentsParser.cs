@@ -1,7 +1,6 @@
 using System;
 using GzipApplication.Compressor;
 using GzipApplication.Constants;
-using GzipApplication.Exceptions;
 using GzipApplication.Exceptions.User;
 
 namespace GzipApplication.ArgumentsParser
@@ -14,7 +13,7 @@ namespace GzipApplication.ArgumentsParser
 
         private const int RequiredArgumentsCount = 3;
 
-        public Action GetAction(string[] arguments)
+        public Action ParseArguments(string[] arguments)
         {
             if (arguments.Length == 0)
                 throw new EmptyArgumentsException($"{UserMessages.EmptyArguments} {UserMessages.SpecifyArguments}");

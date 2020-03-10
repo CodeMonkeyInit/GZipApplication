@@ -1,11 +1,11 @@
 using System;
-using GzipApplication.Compressor;
 using GzipApplication.Constants;
 using GzipApplication.Exceptions.User;
+using GzipApplication.GZip;
 
 namespace GzipApplication.ArgumentsParser
 {
-    public class ArgumentsParser : IArgumentsParser
+    public class ApplicationArgumentsParser : IArgumentsParser
     {
         private const int CommandIndex = 0;
         private const int InputFileIndex = 1;

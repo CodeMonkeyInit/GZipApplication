@@ -8,12 +8,12 @@ using GzipApplication.Constants;
 using GzipApplication.Data;
 using GzipApplication.Exceptions.User;
 
-namespace GzipApplication.Compressor
+namespace GzipApplication.GZip
 {
     /// <summary>
     ///     Gzip decompression action
     /// </summary>
-    public class GZipDecompressor : BaseGzipAction
+    public class GZipDecompressor : BaseGzipAction, IGzipProcessor
     {
         /// <summary>
         ///     Validates header, decompresses data and writes to output.
@@ -42,7 +42,7 @@ namespace GzipApplication.Compressor
             ManualResetEvent writeCompetedEvent) =>
             new ChunkWriter(outputStream, getChunksCount, writeCompetedEvent);
 
-        protected override RentedArray<byte> GetProcessedData(OrderedChunk chunk)
+        public override RentedArray<byte> GetProcessedData(OrderedChunk chunk)
         {
             var length = ApplicationConstants.BufferSizeInBytes;
             var rentedBytes = GzipArrayPool.SharedBytesPool.Rent(length);

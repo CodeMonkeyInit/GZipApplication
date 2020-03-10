@@ -4,13 +4,13 @@ using GzipApplication.Constants;
 using GzipApplication.Data;
 using GzipApplication.WorkQueue;
 
-namespace GzipApplication.ChunkedReader
+namespace GzipApplication.ChunkedReader.BufferedReader
 {
     /// <summary>
     ///     Reads data and fills buffer.
     /// <remarks>Because this reader intended for reading from IO it is not thread safe.</remarks>
     /// </summary>
-    public class BufferedReader
+    public class BufferedReader : IBufferedReader
     {
         private readonly IOBoundQueue _ioBoundQueue;
         private readonly Action<OrderedChunk> _onRead;
@@ -26,11 +26,6 @@ namespace GzipApplication.ChunkedReader
             _readSlotsSemaphore = readSlotsSemaphore;
         }
 
-
-        /// <summary>
-        ///     Read chunks of data using reader until buffer is full or no more read slots are available.
-        /// </summary>
-        /// <returns>true of all chunks were read or false if there is more chunks to read.</returns>
         public bool ReadChunks()
         {
             var readCount = 0;

@@ -4,9 +4,10 @@ using System.IO.Compression;
 using System.Threading;
 using GzipApplication.ChunkedReader;
 using GzipApplication.ChunkedWriter;
+using GzipApplication.Compressor;
 using GzipApplication.Data;
 
-namespace GzipApplication.Compressor
+namespace GzipApplication.GZip
 {
     /// <summary>
     ///     Gzip compression action.
@@ -33,9 +34,9 @@ namespace GzipApplication.Compressor
             ManualResetEvent writeCompletedEvent) =>
             new BinaryChunkedDataWriter(output, getChunksCount, writeCompletedEvent);
 
-        protected override RentedArray<byte> GetProcessedData(OrderedChunk chunk)
+        public override RentedArray<byte> GetProcessedData(OrderedChunk chunk)
         {
-            var length = CalculateArchiveMaxSizeInBytes(chunk.RentedData.RentedLength);
+            var length = ArchiveSizeCalculator.CalculateArchiveMaxSizeInBytes(chunk.RentedData.RentedLength);
             var rentedArray = GzipArrayPool.SharedBytesPool.Rent(length);
 
             using var compressedStream = new MemoryStream(rentedArray, 0, length, true);

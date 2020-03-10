@@ -1,6 +1,6 @@
 using System;
-using System.Diagnostics;
 using System.IO;
+using GzipApplication.ArgumentsParser;
 using GzipApplication.Exceptions.User;
 
 namespace GzipApplication
@@ -12,9 +12,7 @@ namespace GzipApplication
 
         public static int Main(string[] args)
         {
-            var stopwatch = new Stopwatch();
-
-            var argumentsParser = new ArgumentsParser.ArgumentsParser();
+            var argumentsParser = new ApplicationArgumentsParser();
 
             SubscribeToThreadExceptions();
 
@@ -22,13 +20,11 @@ namespace GzipApplication
             {
                 var action = argumentsParser.ParseArguments(args);
 
-                stopwatch.Start();
+                Console.WriteLine("Execution started. Please wait...");
 
                 action();
 
-                stopwatch.Stop();
-
-                Console.WriteLine($"Done in {stopwatch.Elapsed}");
+                Console.WriteLine("Execution complete");
 
                 return ProgramSucceededExitCode;
             }

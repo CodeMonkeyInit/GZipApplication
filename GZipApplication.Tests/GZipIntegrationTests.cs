@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using GzipApplication.Compressor;
 using GzipApplication.Constants;
+using GzipApplication.GZip;
 using GZipApplication.Tests.TestData;
 using Xunit;
 

@@ -10,18 +10,37 @@ using GzipApplication.Exceptions.User;
 
 namespace GzipApplication.Compressor
 {
+    /// <summary>
+    ///     Gzip decompression action
+    /// </summary>
     public class GZipDecompressor : BaseGzipAction
     {
-        protected override BaseChunkedReader GetReader(Stream stream)
+        /// <summary>
+        ///     Validates header, decompresses data and writes to output.
+        /// </summary>
+        public override void Execute(Stream input, Stream output)
         {
-            return new BinaryChunkedReader(stream);
+            ValidateHeader(input);
+            base.Execute(input, output);
         }
 
-        protected override BaseChunkedWriter GetFileWriter(Stream outputStream, Func<long?> getChunksCount,
-            ManualResetEvent writeCompetedEvent)
+        private void ValidateHeader(Stream input)
         {
-            return new ChunkWriter(outputStream, getChunksCount, writeCompetedEvent);
+            Span<byte> bytes = stackalloc byte[sizeof(long)];
+
+            input.Read(bytes);
+
+            var supposedHeader = BitConverter.ToInt64(bytes);
+
+            if (supposedHeader != ArchiveHeader)
+                throw new InvalidArchiveFormatException(UserMessages.ArchiveFormatIsNotSupported);
         }
+
+        protected override BaseChunkedReader GetReader(Stream inputStream) => new BinaryChunkedReader(inputStream);
+
+        protected override BaseChunkedWriter GetWriter(Stream outputStream, Func<long?> getChunksCount,
+            ManualResetEvent writeCompetedEvent) =>
+            new ChunkWriter(outputStream, getChunksCount, writeCompetedEvent);
 
         protected override RentedArray<byte> GetProcessedData(OrderedChunk chunk)
         {

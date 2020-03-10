@@ -24,7 +24,10 @@ namespace GzipApplication.ChunkedReader.BufferedReader
             _ioBoundQueue = ioBoundQueue;
             _onRead = onRead;
             _readSlotsSemaphore = readSlotsSemaphore;
+            _readChunksDelegate = ReadChunks;
         }
+
+        private readonly Func<bool> _readChunksDelegate;
 
         public bool ReadChunks()
         {
@@ -48,7 +51,7 @@ namespace GzipApplication.ChunkedReader.BufferedReader
                 _ioBoundQueue.Enqueue(new Function
                 {
                     Name = nameof(ReadChunks),
-                    Payload = ReadChunks
+                    Payload = _readChunksDelegate
                 });
             }
 

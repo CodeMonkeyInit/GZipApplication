@@ -17,6 +17,7 @@ namespace GzipApplication.Constants
         public static string FileIsEmpty = "Sorry, the file you provided is empty, so there is nothing to compress";
 
         public const string FilepathIsInvalidFormat = "{0} filepath: '{1}' is invalid.";
+        public const string UnableToCreateOutputFileFormat = "Cannot create output file. Reason: {0}";
 
         public const string UnreadableFileFormat =
             "Can't read file {0}. Looks like file is in use by another program. Or Program doesn't have enough permissions";

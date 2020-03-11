@@ -21,7 +21,7 @@ namespace GzipApplication.GZip
         public void Execute(string inputFilename, string outputFilename)
         {
             using var inputFile = GetInputFile(inputFilename);
-            using var outputFile = File.Create(outputFilename);
+            using var outputFile = GetOutputFile(outputFilename);
 
             Execute(inputFile, outputFile);
         }
@@ -37,6 +37,21 @@ namespace GzipApplication.GZip
                 throw new InvalidFilePath(UserMessages.FileIsEmpty);
 
             return fileInfo.OpenRead();
+        }
+
+        private FileStream GetOutputFile(string outputFilename)
+        {
+            try
+            {
+                return File.Create(outputFilename);
+            }
+            catch (Exception e) when (e is UnauthorizedAccessException
+                                      || e is PathTooLongException
+                                      || e is DirectoryNotFoundException
+                                      || e is IOException)
+            {
+                throw new InvalidFilePath(string.Format(UserMessages.UnableToCreateOutputFileFormat, e.Message));
+            }
         }
 
         public virtual void Execute(Stream input, Stream output)

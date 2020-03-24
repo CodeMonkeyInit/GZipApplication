@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Concurrent;
 using System.Threading;
+using GzipApplication.Data;
 
 namespace GzipApplication.WorkQueue
 {
@@ -13,7 +13,9 @@ namespace GzipApplication.WorkQueue
 
         public static CpuBoundWorkQueue Instance => _instance.Value;
 
-        private readonly ConcurrentQueue<Action> _concurrentQueue = new ConcurrentQueue<Action>();
+        private readonly IThreadSafeQueue<Action>
+            _concurrentQueue = new ThreadSafeQueue<Action>(ParallelWorkMax * 1000);
+
         private readonly SemaphoreSlim _workQueuedSemaphore = new SemaphoreSlim(0);
 
         private readonly Thread[] _threads;

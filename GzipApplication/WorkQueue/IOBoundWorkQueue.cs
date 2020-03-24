@@ -1,6 +1,7 @@
 using System;
-using System.Collections.Concurrent;
 using System.Threading;
+using GzipApplication.Constants;
+using GzipApplication.Data;
 
 namespace GzipApplication.WorkQueue
 {
@@ -9,7 +10,8 @@ namespace GzipApplication.WorkQueue
     /// </summary>
     public class IOBoundQueue
     {
-        private readonly ConcurrentQueue<Function> _actions = new ConcurrentQueue<Function>();
+        private readonly IThreadSafeQueue<Function> _actions =
+            new ThreadSafeQueue<Function>(ApplicationConstants.BufferSlots * 1000);
 
         private readonly AutoResetEvent _newActionEnqueued = new AutoResetEvent(false);
 

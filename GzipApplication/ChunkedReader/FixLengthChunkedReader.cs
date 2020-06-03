@@ -26,8 +26,7 @@ namespace GzipApplication.ChunkedReader
         {
             get
             {
-                if (!_lengthInChunks.HasValue)
-                    _lengthInChunks = (long) Math.Ceiling((double) _fileStream.Length / _chunkSizeInBytes);
+                _lengthInChunks ??= (long) Math.Ceiling((double) _fileStream.Length / _chunkSizeInBytes);
 
                 return _lengthInChunks.Value;
             }

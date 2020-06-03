@@ -7,6 +7,7 @@ using GzipApplication.ChunkedWriter;
 using GzipApplication.Constants;
 using GzipApplication.Data;
 using GzipApplication.Exceptions.User;
+using GzipApplication.Files;
 
 namespace GzipApplication.GZip
 {
@@ -15,13 +16,17 @@ namespace GzipApplication.GZip
     /// </summary>
     public class GZipDecompressor : BaseGzipAction, IGzipProcessor
     {
+        public GZipDecompressor(IFileService fileService) : base(fileService)
+        {
+        }
+
         /// <summary>
         ///     Validates header, decompresses data and writes to output.
         /// </summary>
-        public override void Execute(Stream input, Stream output)
+        public override void Execute(Stream input, Stream output, bool ioIsOnDifferentDrives)
         {
             ValidateHeader(input);
-            base.Execute(input, output);
+            base.Execute(input, output, ioIsOnDifferentDrives);
         }
 
         private void ValidateHeader(Stream input)

@@ -4,8 +4,8 @@ using System.IO.Compression;
 using System.Threading;
 using GzipApplication.ChunkedReader;
 using GzipApplication.ChunkedWriter;
-using GzipApplication.Compressor;
 using GzipApplication.Data;
+using GzipApplication.Files;
 
 namespace GzipApplication.GZip
 {
@@ -14,13 +14,17 @@ namespace GzipApplication.GZip
     /// </summary>
     public class GZipCompressor : BaseGzipAction
     {
+        public GZipCompressor(IFileService fileService) : base(fileService)
+        {
+        }
+
         /// <summary>
         ///     Writes header, compresses data and writes it to output.
         /// </summary>
-        public override void Execute(Stream input, Stream output)
+        public override void Execute(Stream input, Stream output, bool ioIsOnDifferentDrives)
         {
             WriteHeader(output);
-            base.Execute(input, output);
+            base.Execute(input, output, ioIsOnDifferentDrives);
         }
 
         private void WriteHeader(Stream output)

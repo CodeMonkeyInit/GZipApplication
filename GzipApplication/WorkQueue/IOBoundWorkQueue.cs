@@ -31,13 +31,27 @@ namespace GzipApplication.WorkQueue
         {
             do
             {
-                _newActionEnqueued.WaitOne();
-
-                while (_actions.TryDequeue(out Function function))
-                {
-                    function.Payload();
-                }
+                ExecuteWork();
             } while (!eventWaitHandle.WaitOne(TimeSpan.Zero));
+        }
+
+        public void Evaluate()
+        {
+            while (true)
+            {
+                ExecuteWork();
+            }
+        }
+
+        private void ExecuteWork()
+        {
+            //TODO replace with blocking collection
+            _newActionEnqueued.WaitOne();
+
+            while (_actions.TryDequeue(out Function function))
+            {
+                function.Payload();
+            }
         }
     }
 }

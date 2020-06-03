@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.IO;
 using System.Threading;
 using GzipApplication.ChunkedReader;
@@ -7,6 +8,7 @@ using GzipApplication.ChunkedWriter;
 using GzipApplication.Constants;
 using GzipApplication.Data;
 using GzipApplication.Exceptions.User;
+using GzipApplication.Files;
 using GzipApplication.WorkQueue;
 
 namespace GzipApplication.GZip
@@ -14,17 +16,27 @@ namespace GzipApplication.GZip
     /// <summary>
     ///     Base class for Gzip actions.
     /// </summary>
-    public abstract partial class BaseGzipAction : IGzipProcessor
+    public abstract class BaseGzipAction : IGzipProcessor
     {
         public const long ArchiveHeader = 0xBAD_DEAD_1337_C0DE;
+
+        private readonly IFileService _fileService;
+
+        protected BaseGzipAction(IFileService fileService)
+        {
+            _fileService = fileService;
+        }
 
         public void Execute(string inputFilename, string outputFilename)
         {
             using var inputFile = GetInputFile(inputFilename);
             using var outputFile = GetOutputFile(outputFilename);
 
-            Execute(inputFile, outputFile);
+            bool ioOnDifferentDrives = _fileService.IsFilesOnDifferentDrives(inputFilename, outputFilename);
+
+            Execute(inputFile, outputFile, ioOnDifferentDrives);
         }
+
 
         private FileStream GetInputFile(string inputFilePath)
         {
@@ -54,7 +66,7 @@ namespace GzipApplication.GZip
             }
         }
 
-        public virtual void Execute(Stream input, Stream output)
+        public virtual void Execute(Stream input, Stream output, bool ioIsOnDifferentDrives)
         {
             using var chunkedFileReader = GetReader(input);
 
@@ -63,30 +75,34 @@ namespace GzipApplication.GZip
             // ReSharper disable once AccessToDisposedClosure
             using var fileWriter = GetWriter(output, () => chunkedFileReader.LengthInChunks, writeCompletedEvent);
 
-            Execute(chunkedFileReader, fileWriter, writeCompletedEvent);
+            Execute(chunkedFileReader, fileWriter, writeCompletedEvent, ioIsOnDifferentDrives);
         }
 
         private void Execute(IChunkedReader reader, IChunkedWriter writer,
-            ManualResetEvent writeCompletedEvent)
+            ManualResetEvent writeCompletedEvent, bool ioIsOnDifferentDrives)
         {
             using var readSlotsSemaphore = new SemaphoreSlim(ApplicationConstants.BufferSlots);
 
-            var ioBoundQueue = new IOBoundQueue();
+            var writerQueue = new IOBoundQueue();
+            var readerQueue = ioIsOnDifferentDrives ? new IOBoundQueue() : writerQueue;
 
-            var chunkProcessor = new GzipChunkProcessor(readSlotsSemaphore, ioBoundQueue, writer, this);
+            var chunkProcessor = new GzipChunkProcessor(readSlotsSemaphore, writerQueue, writer, this);
 
             void ProcessingFunction(OrderedChunk chunk) =>
                 CpuBoundWorkQueue.Instance.QueueWork(() => chunkProcessor.Process(chunk));
 
             var bufferedReader =
-                new BufferedReader(reader, ioBoundQueue, ProcessingFunction, readSlotsSemaphore);
+                new BufferedReader(reader, readerQueue, ProcessingFunction, readSlotsSemaphore);
 
             var readingFunction = new Function(nameof(BufferedReader.ReadChunks),
                 () => bufferedReader.ReadChunks());
 
-            ioBoundQueue.Enqueue(readingFunction);
+            readerQueue.Enqueue(readingFunction);
 
-            ioBoundQueue.Evaluate(writeCompletedEvent);
+            if (ioIsOnDifferentDrives)
+                new Thread(() => readerQueue.Evaluate()) {IsBackground = true}.Start();
+
+            writerQueue.Evaluate(writeCompletedEvent);
         }
 
         protected abstract BaseChunkedReader GetReader(Stream inputStream);

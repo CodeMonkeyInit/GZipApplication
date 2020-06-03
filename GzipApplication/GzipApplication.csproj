@@ -7,7 +7,10 @@
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <UserSecretsId>dotnet-GzipApplication-1396A9B9-2C32-4C25-9188-B66055FC6130</UserSecretsId>
         <PublishSingleFile>true</PublishSingleFile>
-        <PublishTrimmed>true</PublishTrimmed>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Management" Version="4.7.0"/>
+    </ItemGroup>
 
 </Project>

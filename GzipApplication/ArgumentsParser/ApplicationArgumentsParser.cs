@@ -1,6 +1,7 @@
 using System;
 using GzipApplication.Constants;
 using GzipApplication.Exceptions.User;
+using GzipApplication.Files;
 using GzipApplication.GZip;
 
 namespace GzipApplication.ArgumentsParser
@@ -29,7 +30,9 @@ namespace GzipApplication.ArgumentsParser
             ValidatePath(inputFilePath, "Input");
             ValidatePath(outputFilePath, "Output");
 
-            var delegateToCall = GetDelegateToCall(command);
+            IFileService fileService = FileServiceFactory.GetFileService();
+
+            var delegateToCall = GetDelegateToCall(command, fileService);
 
             return () => delegateToCall(inputFilePath, outputFilePath);
         }
@@ -40,12 +43,13 @@ namespace GzipApplication.ArgumentsParser
                 throw new InvalidFilePath(string.Format(UserMessages.FilepathIsInvalidFormat, name, filePath));
         }
 
-        private static Action<string, string> GetDelegateToCall(string command) => command switch
-        {
-            Commands.Compression => new GZipCompressor().Execute,
-            Commands.Decompression => new GZipDecompressor().Execute,
-            _ => throw new InvalidArgumentException(
-                $"{string.Format(UserMessages.InvalidArgumentFormat, command)} {UserMessages.ValidArgumentsFormat}")
-        };
+        private static Action<string, string> GetDelegateToCall(string command, IFileService fileService) =>
+            command switch
+            {
+                Commands.Compression => new GZipCompressor(fileService).Execute,
+                Commands.Decompression => new GZipDecompressor(fileService).Execute,
+                _ => throw new InvalidArgumentException(
+                    $"{string.Format(UserMessages.InvalidArgumentFormat, command)} {UserMessages.ValidArgumentsFormat}")
+            };
     }
 }

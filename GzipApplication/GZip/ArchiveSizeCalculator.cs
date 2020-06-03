@@ -1,7 +1,7 @@
 using System;
 using GzipApplication.Constants;
 
-namespace GzipApplication.Compressor
+namespace GzipApplication.GZip
 {
     public static class ArchiveSizeCalculator
     {

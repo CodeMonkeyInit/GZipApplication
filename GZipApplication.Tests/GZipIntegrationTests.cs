@@ -22,11 +22,11 @@ namespace GZipApplication.Tests
 
         private static byte[] GetCompressedData(byte[] dataToCompress)
         {
-            var gZipCompressor = new GZipCompressor();
+            var gZipCompressor = new GZipCompressor(new InMemoryFileService());
 
             var outputStream = new MemoryStream();
 
-            gZipCompressor.Execute(new MemoryStream(dataToCompress), outputStream);
+            gZipCompressor.Execute(new MemoryStream(dataToCompress), outputStream, true);
 
             var compressedResult = outputStream.ToArray();
 
@@ -35,11 +35,11 @@ namespace GZipApplication.Tests
 
         private static byte[] GetDecompressData(byte[] compressedData)
         {
-            var gZipDecompressor = new GZipDecompressor();
+            var gZipDecompressor = new GZipDecompressor(new InMemoryFileService());
 
             var decompressedStream = new MemoryStream();
 
-            gZipDecompressor.Execute(new MemoryStream(compressedData), decompressedStream);
+            gZipDecompressor.Execute(new MemoryStream(compressedData), decompressedStream, true);
 
             var decompressedBytes = decompressedStream.ToArray();
 
